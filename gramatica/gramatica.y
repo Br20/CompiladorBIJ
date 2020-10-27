@@ -68,7 +68,8 @@ ejecutable	: asignacion
 			| error ';'  {yyerror($2.ival,"Error sintactico en sentencia ejecutable");}
 ;			
 
-declaracion	: tipo parametros ';' {agregarEstructura("SENTENCIA DECLARATIVA en linea " + $1.ival + " hasta linea " + $3.ival);}
+declaracion	: tipo parametros ';' {agregarEstructura("SENTENCIA DECLARATIVA en linea " + $1.ival + " hasta linea " + $3.ival);
+									System.out.println("Aca andan los paramentro pa: " + $2.sval +"  " + $1.sval);}
 ;
 
 
@@ -123,32 +124,66 @@ termino 	: termino '*' factor
 ;
 
 factor		: ID
- 			| CTE_INT { if ($1.sval.equals("32768")){
-					yyerrorLex("Constante positiva fuera de rango");
-					tSimbolos.replace($1.sval, (tSimbolos.get($1.sval)-1));
-					if (tSimbolos.get($1.sval) == 0)
-						tSimbolos.remove($1.sval);
-					$1.sval="32767";
-					if (!tSimbolos.containsKey($1.sval))
-						tSimbolos.put($1.sval, 1);
-					else 
-						tSimbolos.replace($1.sval, (tSimbolos.get($1.sval)+1));
+ 			| CTE_INT { 
+				 	Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+					int cant = 0;
+					if ($1.sval.equals("32768")){
+						yyerrorLex("Constante positiva fuera de rango");
+						hs = tSimbolos.get($1.sval);
+						cant = (int)hs.get("Referencias").getValue();
+						hs.get("Referencias").setValue(cant--);
+						if ((int)hs.get("Referencias").getValue() == 0)
+							tSimbolos.remove($1.sval);
+						$1.sval="32767";
+						if (!tSimbolos.containsKey($1.sval)){
+							hs = new Hashtable<String, Atributo>();
+							Atributo cantR = new Atributo("Referencias", 1);
+							hs.put(cantR.getNombre(), cantR);
+							tSimbolos.put($1.sval, hs);
+						}
+						else{ 
+							hs = tSimbolos.get($1.sval);
+							cant = (int)hs.get("Referencias").getValue();
+							hs.get("Referencias").setValue(cant++);
+						}
  				}}
 
-			| '-' CTE_INT {	if (!tSimbolos.containsKey("-" +$2.sval))
-								tSimbolos.put("-" +$2.sval, 1);
-							else 
-								tSimbolos.replace("-" + $2.sval, (tSimbolos.get("-" +$2.sval)+1));
-							tSimbolos.replace($2.sval, (tSimbolos.get($2.sval)-1));
-							if (tSimbolos.get($2.sval) == 0)
+			| '-' CTE_INT {	
+							Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+							int cant = 0;
+							if (!tSimbolos.containsKey("-" +$2.sval)){
+								Atributo cantR = new Atributo("Referencias", 1);
+								hs.put(cantR.getNombre(), cantR);
+								tSimbolos.put("-" +$2.sval, hs);
+							}
+							else {
+								hs = tSimbolos.get("-" + $2.sval);
+								cant = (int)hs.get("Referencias").getValue();
+								hs.get("Referencias").setValue(cant++);
+							}
+							hs = tSimbolos.get($2.sval);
+							cant = (int)hs.get("Referencias").getValue();
+							hs.get("Referencias").setValue(cant--);
+							if ((int)tSimbolos.get($2.sval).get("Referencias").getValue() == 0)
 									tSimbolos.remove($2.sval);}
 			| CTE_FLOAT {}
-			| '-' CTE_FLOAT {	if (!tSimbolos.containsKey("-" +$2.sval))
-								tSimbolos.put("-" +$2.sval, 1);
-							else 
-								tSimbolos.replace("-" + $2.sval, (tSimbolos.get("-" +$2.sval)+1));
-							tSimbolos.replace($2.sval, (tSimbolos.get($2.sval)-1));
-							if (tSimbolos.get($2.sval) == 0)
+			| '-' CTE_FLOAT {	
+							Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+							int cant = 0;
+							if (!tSimbolos.containsKey("-" +$2.sval)){
+								Atributo cantR = new Atributo("Referencias", 1);
+								hs.put(cantR.getNombre(), cantR);
+								tSimbolos.put("-" +$2.sval, hs);
+							}
+							else {
+								hs = tSimbolos.get("-" +$2.sval);
+								cant = (int)hs.get("Referencias").getValue();
+								hs.get("Referencias").setValue(cant++);
+							}
+							hs = tSimbolos.get($2.sval);
+							cant = (int)hs.get("Referencias").getValue();
+							hs.get("Referencias").setValue(cant--);
+							if ((int)tSimbolos.get($2.sval).get("Referencias").getValue() == 0)
 									tSimbolos.remove($2.sval);}
 ;
 
@@ -157,10 +192,10 @@ boolean 	: TRUE
 ;	
 
 %%
-	private Lexico lexer;
+		private Lexico lexer;
 	private int erroresS = 0;
 	public static int nLinea = 1;
-	public Hashtable<String, Integer> tSimbolos = new Hashtable<String, Integer>();
+	public Hashtable<String, Hashtable<String, Atributo>> tSimbolos = new Hashtable<String, Hashtable<String, Atributo>>();
 	private FileWriter txtErrores = null;
 	private static PrintWriter pw = null;
 	private FileWriter txtTokens = null;
@@ -205,7 +240,7 @@ boolean 	: TRUE
 	public void escribirTablaS() {
 		//escribe todos los datos que se tenga en la tabla de simbolos con la cantidad de referencias
 		tSimbolos.forEach((k, v) -> {
-			pwTa.println("Simbolo: " + k + ", cantidad de referencias: " + v);
+			pwTa.println("Simbolo: " + k + " " + v);
 		});
 	}
 
@@ -225,10 +260,15 @@ boolean 	: TRUE
 		yylval = new ParserVal(token.getKey());
 		yylval.ival = nLinea; //se utiliza la variable ival de la clase ParserVal para guardar el numero de linea en el que se detecto el token
 		if (token.getKey() != null) { // Si tiene lexema
+			Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+			Atributo cantR = new Atributo("Referencias", 1);
+			hs.put(cantR.getNombre(), cantR);
 			if (!tSimbolos.containsKey(token.getKey())) { // Si no existe en tabla de simbolos se crea para ese lexema
-				tSimbolos.put(token.getKey(), 1);
+				tSimbolos.put(token.getKey(), hs);
 			} else {
-				tSimbolos.replace(token.getKey(), (tSimbolos.get(token.getKey()) + 1));
+				hs = tSimbolos.get(token.getKey());
+				int cant = (int)hs.get("Referencias").getValue();
+				hs.get("Referencias").setValue(cant++);
 			}
 		}
 		return (int) token.getValue();
@@ -237,19 +277,19 @@ boolean 	: TRUE
 	private void yyerror(String s) {
 		if (!s.equals("syntax error")) { // Ignora el error default de yacc.
 			erroresS++;
-			System.out.println("Error de sintaxis cerca de la línea " + nLinea + ": " + s);
-			pw.println("Error de sintaxis cerca de la línea " + nLinea + ": " + s);
+			System.out.println("Error de sintaxis cerca de la linea " + nLinea + ": " + s);
+			pw.println("Error de sintaxis cerca de la linea " + nLinea + ": " + s);
 		}
 	}
 
 	private void yyerror(int linea, String s) {
 		erroresS++;
 		System.out.println("Linea: " + linea + " - Error: " + s);
-		pw.println("Error de sintaxis cerca de la línea " + linea + ": " + s);
+		pw.println("Error de sintaxis cerca de la linea " + linea + ": " + s);
 	}
 
 	private void yyerrorLex(String s) {
 		// Agrega los errores lexicos que detecta la gramatica	
 		Lexico.erroresL++;
-		pw.println("Error cerca de la línea " + nLinea + ": " + s);
+		pw.println("Error cerca de la linea " + nLinea + ": " + s);
 	}

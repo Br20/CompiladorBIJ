@@ -1,6 +1,7 @@
 package compilador;
 
 public class Atributo {
+	
 	private String nombre;
 	private Object value;
 	
@@ -15,6 +16,14 @@ public class Atributo {
 	
 	public Object getValue() {
 		return this.value;
+	}
+	
+	public void setValue(Object value) {
+		this.value = value;
+	}
+	
+	public String toString() {
+		return ": " + this.value.toString();
 	}
 	
 }

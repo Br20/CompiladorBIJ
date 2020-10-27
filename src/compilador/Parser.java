@@ -437,11 +437,11 @@ final static String yyrule[] = {
 "boolean : FALSE",
 };
 
-//#line 160 "gramatica.y"
-	private Lexico lexer;
+//#line 195 "gramatica.y"
+		private Lexico lexer;
 	private int erroresS = 0;
 	public static int nLinea = 1;
-	public Hashtable<String, Integer> tSimbolos = new Hashtable<String, Integer>();
+	public Hashtable<String, Hashtable<String, Atributo>> tSimbolos = new Hashtable<String, Hashtable<String, Atributo>>();
 	private FileWriter txtErrores = null;
 	private static PrintWriter pw = null;
 	private FileWriter txtTokens = null;
@@ -486,7 +486,7 @@ final static String yyrule[] = {
 	public void escribirTablaS() {
 		//escribe todos los datos que se tenga en la tabla de simbolos con la cantidad de referencias
 		tSimbolos.forEach((k, v) -> {
-			pwTa.println("Simbolo: " + k + ", cantidad de referencias: " + v);
+			pwTa.println("Simbolo: " + k + " " + v);
 		});
 	}
 
@@ -506,10 +506,15 @@ final static String yyrule[] = {
 		yylval = new ParserVal(token.getKey());
 		yylval.ival = nLinea; //se utiliza la variable ival de la clase ParserVal para guardar el numero de linea en el que se detecto el token
 		if (token.getKey() != null) { // Si tiene lexema
+			Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+			Atributo cantR = new Atributo("Referencias", 1);
+			hs.put(cantR.getNombre(), cantR);
 			if (!tSimbolos.containsKey(token.getKey())) { // Si no existe en tabla de simbolos se crea para ese lexema
-				tSimbolos.put(token.getKey(), 1);
+				tSimbolos.put(token.getKey(), hs);
 			} else {
-				tSimbolos.replace(token.getKey(), (tSimbolos.get(token.getKey()) + 1));
+				hs = tSimbolos.get(token.getKey());
+				int cant = (int)hs.get("Referencias").getValue();
+				hs.get("Referencias").setValue(cant++);
 			}
 		}
 		return (int) token.getValue();
@@ -518,23 +523,23 @@ final static String yyrule[] = {
 	private void yyerror(String s) {
 		if (!s.equals("syntax error")) { // Ignora el error default de yacc.
 			erroresS++;
-			System.out.println("Error de sintaxis cerca de la línea " + nLinea + ": " + s);
-			pw.println("Error de sintaxis cerca de la línea " + nLinea + ": " + s);
+			System.out.println("Error de sintaxis cerca de la linea " + nLinea + ": " + s);
+			pw.println("Error de sintaxis cerca de la linea " + nLinea + ": " + s);
 		}
 	}
 
 	private void yyerror(int linea, String s) {
 		erroresS++;
 		System.out.println("Linea: " + linea + " - Error: " + s);
-		pw.println("Error de sintaxis cerca de la línea " + linea + ": " + s);
+		pw.println("Error de sintaxis cerca de la linea " + linea + ": " + s);
 	}
 
 	private void yyerrorLex(String s) {
 		// Agrega los errores lexicos que detecta la gramatica	
 		Lexico.erroresL++;
-		pw.println("Error cerca de la línea " + nLinea + ": " + s);
+		pw.println("Error cerca de la linea " + nLinea + ": " + s);
 	}
-//#line 466 "Parser.java"
+//#line 471 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -726,87 +731,122 @@ case 29:
 break;
 case 30:
 //#line 71 "gramatica.y"
-{agregarEstructura("SENTENCIA DECLARATIVA en linea " + val_peek(2).ival + " hasta linea " + val_peek(0).ival);}
+{agregarEstructura("SENTENCIA DECLARATIVA en linea " + val_peek(2).ival + " hasta linea " + val_peek(0).ival);
+									System.out.println("Aca andan los paramentro pa: " + val_peek(1).sval +"  " + val_peek(2).sval);}
 break;
 case 31:
-//#line 75 "gramatica.y"
+//#line 76 "gramatica.y"
 {agregarEstructura("SENTENCIA DE CONTROL en linea " + val_peek(8).ival);}
 break;
 case 32:
-//#line 78 "gramatica.y"
+//#line 79 "gramatica.y"
 {agregarEstructura("SENTENCIA DE INVOCACION en linea " + val_peek(4).ival);}
 break;
 case 33:
-//#line 79 "gramatica.y"
+//#line 80 "gramatica.y"
 {agregarEstructura("SENTENCIA DE INVOCACION en linea " + val_peek(3).ival);}
 break;
 case 34:
-//#line 83 "gramatica.y"
+//#line 84 "gramatica.y"
 {agregarEstructura("SENTENCIA DE SALIDA en linea: " + val_peek(4).ival);}
 break;
 case 35:
-//#line 86 "gramatica.y"
+//#line 87 "gramatica.y"
 {agregarEstructura("SENTENCIA DE SELECCION en linea " + val_peek(12).ival + " hasta linea " + val_peek(4).ival);}
 break;
 case 36:
-//#line 87 "gramatica.y"
+//#line 88 "gramatica.y"
 {agregarEstructura("SENTENCIA DE SELECCION en linea " + val_peek(8).ival + " hasta linea " + val_peek(2).ival);}
 break;
 case 47:
-//#line 105 "gramatica.y"
+//#line 106 "gramatica.y"
 {yyerror(val_peek(1).ival,"Parametro faltante luego de la ',' ");}
 break;
 case 48:
-//#line 106 "gramatica.y"
+//#line 107 "gramatica.y"
 {yyerror(val_peek(2).ival,"Parametro faltante luego de la ',' ");}
 break;
 case 49:
-//#line 111 "gramatica.y"
+//#line 112 "gramatica.y"
 {agregarEstructura("SENTENCIA DE ASIGNACION en linea " + val_peek(3).ival + " hasta linea " + val_peek(0).ival);}
 break;
 case 50:
-//#line 112 "gramatica.y"
+//#line 113 "gramatica.y"
 {agregarEstructura("SENTENCIA DE ASIGNACION en linea " + val_peek(4).ival + " hasta linea " + val_peek(0).ival);}
 break;
 case 58:
-//#line 126 "gramatica.y"
-{ if (val_peek(0).sval.equals("32768")){
-					yyerrorLex("Constante positiva fuera de rango");
-					tSimbolos.replace(val_peek(0).sval, (tSimbolos.get(val_peek(0).sval)-1));
-					if (tSimbolos.get(val_peek(0).sval) == 0)
-						tSimbolos.remove(val_peek(0).sval);
-					val_peek(0).sval="32767";
-					if (!tSimbolos.containsKey(val_peek(0).sval))
-						tSimbolos.put(val_peek(0).sval, 1);
-					else 
-						tSimbolos.replace(val_peek(0).sval, (tSimbolos.get(val_peek(0).sval)+1));
+//#line 127 "gramatica.y"
+{ 
+				 	Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+					int cant = 0;
+					if (val_peek(0).sval.equals("32768")){
+						yyerrorLex("Constante positiva fuera de rango");
+						hs = tSimbolos.get(val_peek(0).sval);
+						cant = (int)hs.get("Referencias").getValue();
+						hs.get("Referencias").setValue(cant--);
+						if ((int)hs.get("Referencias").getValue() == 0)
+							tSimbolos.remove(val_peek(0).sval);
+						val_peek(0).sval="32767";
+						if (!tSimbolos.containsKey(val_peek(0).sval)){
+							hs = new Hashtable<String, Atributo>();
+							Atributo cantR = new Atributo("Referencias", 1);
+							hs.put(cantR.getNombre(), cantR);
+							tSimbolos.put(val_peek(0).sval, hs);
+						}
+						else{ 
+							hs = tSimbolos.get(val_peek(0).sval);
+							cant = (int)hs.get("Referencias").getValue();
+							hs.get("Referencias").setValue(cant++);
+						}
  				}}
 break;
 case 59:
-//#line 138 "gramatica.y"
-{	if (!tSimbolos.containsKey("-" +val_peek(0).sval))
-								tSimbolos.put("-" +val_peek(0).sval, 1);
-							else 
-								tSimbolos.replace("-" + val_peek(0).sval, (tSimbolos.get("-" +val_peek(0).sval)+1));
-							tSimbolos.replace(val_peek(0).sval, (tSimbolos.get(val_peek(0).sval)-1));
-							if (tSimbolos.get(val_peek(0).sval) == 0)
+//#line 151 "gramatica.y"
+{	
+							Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+							int cant = 0;
+							if (!tSimbolos.containsKey("-" +val_peek(0).sval)){
+								Atributo cantR = new Atributo("Referencias", 1);
+								hs.put(cantR.getNombre(), cantR);
+								tSimbolos.put("-" +val_peek(0).sval, hs);
+							}
+							else {
+								hs = tSimbolos.get("-" + val_peek(0).sval);
+								cant = (int)hs.get("Referencias").getValue();
+								hs.get("Referencias").setValue(cant++);
+							}
+							hs = tSimbolos.get(val_peek(0).sval);
+							cant = (int)hs.get("Referencias").getValue();
+							hs.get("Referencias").setValue(cant--);
+							if ((int)tSimbolos.get(val_peek(0).sval).get("Referencias").getValue() == 0)
 									tSimbolos.remove(val_peek(0).sval);}
 break;
 case 60:
-//#line 145 "gramatica.y"
+//#line 169 "gramatica.y"
 {}
 break;
 case 61:
-//#line 146 "gramatica.y"
-{	if (!tSimbolos.containsKey("-" +val_peek(0).sval))
-								tSimbolos.put("-" +val_peek(0).sval, 1);
-							else 
-								tSimbolos.replace("-" + val_peek(0).sval, (tSimbolos.get("-" +val_peek(0).sval)+1));
-							tSimbolos.replace(val_peek(0).sval, (tSimbolos.get(val_peek(0).sval)-1));
-							if (tSimbolos.get(val_peek(0).sval) == 0)
+//#line 170 "gramatica.y"
+{	
+							Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+							int cant = 0;
+							if (!tSimbolos.containsKey("-" +val_peek(0).sval)){
+								Atributo cantR = new Atributo("Referencias", 1);
+								hs.put(cantR.getNombre(), cantR);
+								tSimbolos.put("-" +val_peek(0).sval, hs);
+							}
+							else {
+								hs = tSimbolos.get("-" +val_peek(0).sval);
+								cant = (int)hs.get("Referencias").getValue();
+								hs.get("Referencias").setValue(cant++);
+							}
+							hs = tSimbolos.get(val_peek(0).sval);
+							cant = (int)hs.get("Referencias").getValue();
+							hs.get("Referencias").setValue(cant--);
+							if ((int)tSimbolos.get(val_peek(0).sval).get("Referencias").getValue() == 0)
 									tSimbolos.remove(val_peek(0).sval);}
 break;
-//#line 733 "Parser.java"
+//#line 773 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####
