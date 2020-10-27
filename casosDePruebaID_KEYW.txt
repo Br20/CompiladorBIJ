@@ -1,0 +1,10 @@
+identificador := 5_i; /% identificador con menor tamaño que 20, es aceptado y se devuelve token ID con su lexema %/
+identificadormayorveinte := 4_i; /% identificador con mayor tamaño que 20, se notifica y se devuelve token ID con lexema del identificador acortado %/
+
+
+id5con_ := 4_i; /% identificador con numeros y _, es aceptado y se devuelve token ID con su lexema %/
+_id5 := 3_i; /% identificador que arranca _, se notifica y consume el _, luego se toma detecta el ID devolviendo token ID con su lexema %/
+
+INTEGER int; /% palabra reservada con mayuscula se devuelve token INTEGER con su lexema %/
+integer := 4_i;   /% palabra reservada con minuscula, no se detecta que es una palabra reservada y se devuelve token ID con su lexema %/
+INTeger int_a;  /% palabra reservada con errores, no se detecta que es una palabra reservada y se informa del error %/

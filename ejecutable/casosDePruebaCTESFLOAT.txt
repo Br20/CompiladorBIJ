@@ -1,0 +1,27 @@
+float_a := 3.40282346f+38; /%   Prueba de constante flotante positiva con el ultimo valor posible, es aceptada y entrega token de CTE_FLOAT con su lexema  %/
+float_b := 1.17549436f-38; /%   Prueba de constante flotante positiva con el primer valor posible, es aceptada y se entrega token CTE_FLOAT con su lexema %/
+float_c := -1.17549436f-38; /%   Prueba de constante con el primer valor posible, es aceptada y se entrega token CTE_FLOAT con su lexema
+(Luego la gramatica se encarga de cambiarlo a negativo) %/ 
+float_d := -3.40282346f+38; /%   Prueba de constante con el ultimo valor posible, es aceptada y se entrega token CTE_FLOAT con su lexema
+(Luego la gramatica se encarga de cambiarlo a negativo) %/ 
+
+
+
+
+float_e := 3.40282347f+38; /%   Prueba de constante flotante positiva con el primer valor rechazado, se informa y entrega token de CTE_FLOAT con lexema "3.40282347" %/
+float_f := 1.17549435f-38; /%   Prueba de constante flotante positiva con el ultimo valor rechazado, se informa y se entrega token CTE_FLOAT con lexema "3.40282347"%/
+float_g := -1.17549435f-38; /%   Prueba de constante con el ultimo valor rechazado, se informa y se entrega token CTE_FLOAT con lexema "3.40282347" 
+(Luego la gramatica se encarga de cambiarlo a negativo) %/ 
+float_h := -3.40282347f+38; /%   Prueba de constante con el primer valor rechazado, se informa y se entrega token CTE_FLOAT con lexema "3.40282347"
+(Luego la gramatica se encarga de cambiarlo a negativo) %/ 
+
+
+
+float_i := 3.; /%   Prueba de constante flotante sin parte exponencial y sin parte decimal, se acepta y entrega token de CTE_FLOAT con su lexema %/
+float_j := .6; /%   Prueba de constante flotante sin parte exponencial y sin parte entera, se acepta y entrega token de CTE_FLOAT con su lexema %/
+float_k := 3.f-2; /%   Prueba de constante flotante con parte exponencial negativa y sin parte decimal, se acepta y entrega token de CTE_FLOAT con su lexema  %/ 
+float_l := 3.f+3; /%   Prueba de constante flotante con parte exponencial positiva y sin parte decimal, se acepta y entrega token de CTE_FLOAT con su lexema %/ 
+float_m := 3.93f; /%   Prueba de constante flotante con error en la parte exponencial, se notifica y entrega token de CTE_FLOAT con lexema sin tener en cuenta 
+la parte exponencial %/ 
+float_n := 3.93f+; /%   Prueba de constante flotante con error en la parte exponencial, se notifica y entrega token de CTE_FLOAT con lexema sin tener en cuenta 
+la parte exponencial %/ 

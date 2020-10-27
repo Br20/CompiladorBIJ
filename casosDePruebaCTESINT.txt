@@ -1,0 +1,9 @@
+int_a := 32767_i; /%   Prueba de constante con el ultimo valor posible, es aceptado por el lexico y entrega token de CTE_INT con lexema "32768"  %/
+int_b := -32768_i; /%   Prueba de constante con el primer valor posible, es aceptado y se entrega token con lexema "32768"
+(Luego la gramatica se encarga de cambiarlo a negativo) %/
+int_c := -32769_i; /%   Prueba de constante con el primer valor fuera de rango por negativos, lexico notifica error
+y entrega token y lexema del ultimo valor posible 32768(Luego la gramatica se encarga de cambiarlo a negativo) %/ 
+int_d := 32768_i; /%   Prueba de constante con el ultimo valor fuera de rango por positivos, la gramatica se encarga de 
+notificar que es una constante positiva fuera de rango y cambia el valor a 32767 %/
+int_e := 32_; /%   Prueba de constante entera mal definida con 'i' faltante, se informa del error y se entrega el token como si estuviera bien definido%/
+int_f := 33i; /%   Prueba de constante entera mal definida con '_' faltante, se informa del error y se entrega el token como si estuviera bien definido%/

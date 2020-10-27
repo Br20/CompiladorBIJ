@@ -1,0 +1,5 @@
+OUT('cadena bien definida'); /%  cadena bien definida, se acepta y se envia el token CADENA con su lexema  %/
+
+OUT('cadena mal definida); 
+/% cadena mal definida ya que no cierra en una linea, se informa pero tambien se
+fuerza el cierre en el cambio de linea y se envia el token de CADENA con ese lexema %/

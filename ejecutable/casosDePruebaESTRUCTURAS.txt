@@ -1,0 +1,39 @@
+	PROC procedimiento (INTEGER id, FLOAT idd) { 
+		var_iable := 32_i;
+		INTEGER int1, int2, int2;
+		IF (variable == 32_i) {
+			OUT ('cadenadecaracteres');	
+		}
+		ELSE
+			funcion(paruno,pardos,);
+			funcion();
+		END_IF;
+		INTEGER asd, asr, agfds, asd, asd;
+		WHILE (unfloat != .6f+3) LOOP {
+			unfloat := 1.2;
+			IF (unfloat-variable < -3_i) {
+				unfloat := 1.6;
+			}
+			END_IF;
+			IF (unfloat+variable > 0.4)
+				unfloat := -1.2f-5;
+			END_IF;
+		};
+		INTEGER asd, asr, agfds, asd, asd;
+		variable := 32.5f+2;
+		IF (variable <= 3.2f+2)
+			variable := -32_i;
+		END_IF;
+		IF (variable >= 3.2f-2)
+			variable := -4.f-5;
+		END_IF;
+		PROC procedimientodos () NA = na, SHADOWING = TRUE {
+			variable := 32_i / variable;
+		}
+		PROC procedimientotres () {
+			variable := 32_i * 3_i;
+		}
+		PROC procedimientocuatro () NA = 32_i, SHADOWING = FALSE {
+			variable := variabledos;
+		}
+	}

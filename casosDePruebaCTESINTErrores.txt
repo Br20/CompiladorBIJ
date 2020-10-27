@@ -1,0 +1,5 @@
+Error lexico constante entera fuera de rango cerca de linea: 4
+Error cerca de la línea 6: Constante positiva fuera de rango
+Error lexico sufijo del integer incorrecto o faltante, cerca de linea:8
+Error lexico integer mal escrito, cerca de linea:9
+Error de sintaxis cerca de la línea 9: Error sintactico en sentencia ejecutable

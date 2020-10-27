@@ -1,0 +1,11 @@
+Simbolo: int_d, cantidad de referencias: 1
+Simbolo: -32768, cantidad de referencias: 2
+Simbolo: int_e, cantidad de referencias: 1
+Simbolo: int_f, cantidad de referencias: 1
+Simbolo: i, cantidad de referencias: 1
+Simbolo: 32767, cantidad de referencias: 2
+Simbolo: int_a, cantidad de referencias: 1
+Simbolo: 32, cantidad de referencias: 1
+Simbolo: int_b, cantidad de referencias: 1
+Simbolo: 33, cantidad de referencias: 1
+Simbolo: int_c, cantidad de referencias: 1

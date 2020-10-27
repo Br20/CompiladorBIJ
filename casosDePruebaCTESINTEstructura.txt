@@ -1,0 +1,5 @@
+SENTENCIA DE ASIGNACION en linea 6 hasta linea 6
+SENTENCIA DE ASIGNACION en linea 4 hasta linea 4
+SENTENCIA DE ASIGNACION en linea 2 hasta linea 2
+SENTENCIA DE ASIGNACION en linea 1 hasta linea 1
+

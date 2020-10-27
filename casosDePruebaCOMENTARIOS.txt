@@ -1,0 +1,9 @@
+/% comentario
+	correcto
+		multilinea
+			de prueba%/
+
+/% comentario
+	incorrecto
+		multilinea
+			de prueba 
