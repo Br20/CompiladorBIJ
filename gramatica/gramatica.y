@@ -18,8 +18,8 @@ import java.util.StringTokenizer;
 programa 	: cuerpo {agregarEstructura("Se termino de compilar el programa correctamente");}
 ;
 
-parametros 	: parametros ',' ID
-			| ID
+parametros 	: parametros ',' ID {setTipo($3.sval, lastTipo.toString());}
+			| ID {setTipo($1.sval, lastTipo.toString());}
 			| parametros ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");}
 ;	
 
@@ -32,8 +32,8 @@ parametrosinvo 	: ID
 
 
 
-tipo		: INTEGER
-			| FLOAT
+tipo		: INTEGER {this.lastTipo = new StringBuffer($1.sval);}
+			| FLOAT {this.lastTipo = new StringBuffer($1.sval);}
 ;
 						
 
@@ -54,11 +54,20 @@ declarativa	: procedure
 ;
 
 
-procedure	: PROC ID '(' lp ')' '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $8.ival);}
-			| PROC ID '(' lp ')' NA '=' factor ',' SHADOWING '=' boolean '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $15.ival);}
-			| PROC ID '(' ')' '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival+ " hasta linea " + $7.ival);}
-			| PROC ID '(' ')' NA '=' factor ',' SHADOWING '=' boolean '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $14.ival);}		
+procedure	: proc '(' lp ')' '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $8.ival);
+															reducirAmbito();}
+			| proc '(' lp ')' NA '=' factor ',' SHADOWING '=' boolean '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $15.ival);
+																									reducirAmbito();}
+			| proc '(' ')' '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival+ " hasta linea " + $7.ival);
+														reducirAmbito();}
+			| proc '(' ')' NA '=' factor ',' SHADOWING '=' boolean '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $14.ival);
+																								reducirAmbito();}		
 ;	
+
+
+proc : PROC ID {incrementarAmbito($2.sval);}
+;
+
 
 ejecutable	: asignacion
 			| salida
@@ -100,11 +109,19 @@ comparador	: COMP_IGUAL
 			| '>'
 ;
 
-lp 		: tipo ID
-			| tipo ID ',' tipo ID
-			| tipo ID ',' tipo ID ',' tipo ID
-			| tipo ID ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");}
-			| tipo ID ',' tipo ID ',' {yyerror($4.ival,"Parametro faltante luego de la ',' ");}	
+lp 		: tipo ID {setTipo($2.sval, $1.sval);}
+			| tipo ID ',' tipo ID { setTipo($2.sval, $1.sval);
+									setTipo($5.sval, $4.sval);
+									}
+			| tipo ID ',' tipo ID ',' tipo ID { setTipo($2.sval, $1.sval);
+									setTipo($5.sval, $4.sval);
+									setTipo($8.sval, $7.sval);
+									}
+			| tipo ID ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");
+							setTipo($2.sval, $1.sval);}
+			| tipo ID ',' tipo ID ',' {yyerror($4.ival,"Parametro faltante luego de la ',' ");
+									setTipo($2.sval, $1.sval);
+									setTipo($5.sval, $4.sval);}	
 ;
 
 
@@ -192,7 +209,7 @@ boolean 	: TRUE
 ;	
 
 %%
-		private Lexico lexer;
+private Lexico lexer;
 	private int erroresS = 0;
 	public static int nLinea = 1;
 	public Hashtable<String, Hashtable<String, Atributo>> tSimbolos = new Hashtable<String, Hashtable<String, Atributo>>();
@@ -205,7 +222,10 @@ boolean 	: TRUE
 	private FileWriter txtEstruc = null;
 	private static PrintWriter pwEs = null;
 	private StringBuffer buffer = new StringBuffer();
-
+	private StringBuffer ambito = new StringBuffer(".p");
+	private StringBuffer lastTipo = new StringBuffer();
+	
+	
 	public int yyparse(String path) throws IOException {
 		//Es la funcion publica con la que el main se comunica y le pasa la direccion del archivo con el codigo
 		//Utiliza la ruta para crear todos los archivos que seran generados
@@ -254,6 +274,27 @@ boolean 	: TRUE
 		pwEs.println(buffer.toString());
 	}
 	
+	
+	private void reducirAmbito() {
+		int ultP = this.ambito.lastIndexOf(".");
+		this.ambito.delete(ultP, this.ambito.length());
+	}
+	
+	private void incrementarAmbito(String nProc) {
+		this.ambito.append("." + nProc);
+	}
+	
+	private void setTipo(String id, String tipo) {
+		Atributo att = new Atributo("Tipo", tipo);
+		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString());
+		if(!hs.containsKey("Tipo")) {
+			hs.put(att.getNombre(), att);
+		}else {
+			yyerror("Se esta intentando redefinir una variable");
+		}
+	}
+
+	
 	private int yylex() {
 		Par token = this.lexer.yylex();
 		pwTo.println("Token entregado: " + token.getValue()); // agrega el token entregado al archivo de tokens
@@ -263,12 +304,23 @@ boolean 	: TRUE
 			Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
 			Atributo cantR = new Atributo("Referencias", 1);
 			hs.put(cantR.getNombre(), cantR);
-			if (!tSimbolos.containsKey(token.getKey())) { // Si no existe en tabla de simbolos se crea para ese lexema
-				tSimbolos.put(token.getKey(), hs);
-			} else {
-				hs = tSimbolos.get(token.getKey());
-				int cant = (int)hs.get("Referencias").getValue();
-				hs.get("Referencias").setValue(cant++);
+			if (token.getValue() == ID) {
+				String lexema = token.getKey().concat(this.ambito.toString()); 
+				if (!tSimbolos.containsKey(lexema)) { // Si no existe en tabla de simbolos se crea para ese lexema
+					tSimbolos.put(lexema, hs);
+				} else {
+					hs = tSimbolos.get(lexema);
+					int cant = (int)hs.get("Referencias").getValue();
+					hs.get("Referencias").setValue(cant++);
+				}
+			}else {
+				if (!tSimbolos.containsKey(token.getKey())) { // Si no existe en tabla de simbolos se crea para ese lexema
+					tSimbolos.put(token.getKey(), hs);
+				} else {
+					hs = tSimbolos.get(token.getKey());
+					int cant = (int)hs.get("Referencias").getValue();
+					hs.get("Referencias").setValue(cant++);
+				}
 			}
 		}
 		return (int) token.getValue();
