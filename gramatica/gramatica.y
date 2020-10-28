@@ -18,8 +18,10 @@ import java.util.StringTokenizer;
 programa 	: cuerpo {agregarEstructura("Se termino de compilar el programa correctamente");}
 ;
 
-parametros 	: parametros ',' ID {setTipo($3.sval, lastTipo.toString());}
-			| ID {setTipo($1.sval, lastTipo.toString());}
+parametros 	: parametros ',' ID {setTipo($3.sval, lastTipo.toString());
+								addAtributo($3.sval,"Uso", "nombre de variable");}
+			| ID {setTipo($1.sval, lastTipo.toString());
+				addAtributo($1.sval,"Uso", "nombre de variable");}
 			| parametros ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");}
 ;	
 
@@ -54,18 +56,22 @@ declarativa	: procedure
 ;
 
 
-procedure	: proc '(' lp ')' '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $8.ival);
+procedure	: proc procdef '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $5.ival);
 															reducirAmbito();}
-			| proc '(' lp ')' NA '=' factor ',' SHADOWING '=' boolean '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $15.ival);
-																									reducirAmbito();}
-			| proc '(' ')' '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival+ " hasta linea " + $7.ival);
-														reducirAmbito();}
-			| proc '(' ')' NA '=' factor ',' SHADOWING '=' boolean '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $14.ival);
-																								reducirAmbito();}		
 ;	
 
 
-proc : PROC ID {incrementarAmbito($2.sval);}
+proc : PROC ID {incrementarAmbito($2.sval);
+				this.ultProc = new StringBuffer($2.sval);
+				addAtributoPDec(this.ultProc.toString(),"Uso", "nombre de procedimiento");}
+;
+
+procdef : 	  '(' lp ')'
+			| '(' lp ')' NA '=' factor ',' SHADOWING '=' boolean {addAtributoP( this.ultProc.toString(),"NA", $6.sval);
+																addAtributoP( this.ultProc.toString(),"SHADOWING", $10.sval);}
+			| '(' ')'
+			| '(' ')' NA '=' factor ',' SHADOWING '=' boolean {} {addAtributoP(this.ultProc.toString(),"NA", $5.sval);
+																addAtributoP(this.ultProc.toString(),"SHADOWING", $9.sval);}
 ;
 
 
@@ -109,19 +115,28 @@ comparador	: COMP_IGUAL
 			| '>'
 ;
 
-lp 		: tipo ID {setTipo($2.sval, $1.sval);}
+lp 		: tipo ID {setTipo($2.sval, $1.sval);
+					addAtributo($2.sval,"Uso", "nombre de parametro");}
 			| tipo ID ',' tipo ID { setTipo($2.sval, $1.sval);
 									setTipo($5.sval, $4.sval);
+									addAtributo($2.sval,"Uso", "nombre de parametro");
+									addAtributo($5.sval,"Uso", "nombre de parametro");
 									}
 			| tipo ID ',' tipo ID ',' tipo ID { setTipo($2.sval, $1.sval);
 									setTipo($5.sval, $4.sval);
 									setTipo($8.sval, $7.sval);
+									addAtributo($2.sval,"Uso", "nombre de parametro");
+									addAtributo($5.sval,"Uso", "nombre de parametro");
+									addAtributo($8.sval,"Uso", "nombre de parametro");
 									}
 			| tipo ID ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");
-							setTipo($2.sval, $1.sval);}
+							setTipo($2.sval, $1.sval);
+							addAtributo($2.sval,"Uso", "nombre de parametro");}
 			| tipo ID ',' tipo ID ',' {yyerror($4.ival,"Parametro faltante luego de la ',' ");
 									setTipo($2.sval, $1.sval);
-									setTipo($5.sval, $4.sval);}	
+									setTipo($5.sval, $4.sval);
+									addAtributo($2.sval,"Uso", "nombre de parametro");
+									addAtributo($5.sval,"Uso", "nombre de parametro");}	
 ;
 
 
@@ -209,7 +224,7 @@ boolean 	: TRUE
 ;	
 
 %%
-private Lexico lexer;
+	private Lexico lexer;
 	private int erroresS = 0;
 	public static int nLinea = 1;
 	public Hashtable<String, Hashtable<String, Atributo>> tSimbolos = new Hashtable<String, Hashtable<String, Atributo>>();
@@ -224,6 +239,9 @@ private Lexico lexer;
 	private StringBuffer buffer = new StringBuffer();
 	private StringBuffer ambito = new StringBuffer(".p");
 	private StringBuffer lastTipo = new StringBuffer();
+	private StringBuffer ultProc = new StringBuffer();
+	
+	
 	
 	
 	public int yyparse(String path) throws IOException {
@@ -293,6 +311,41 @@ private Lexico lexer;
 			yyerror("Se esta intentando redefinir una variable");
 		}
 	}
+	
+	
+	public void addAtributoPDec(String id, String nAtt, String valor) {
+		int ultP = this.ambito.lastIndexOf(".");
+		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString().substring(0, ultP));
+		if(hs.containsKey("Uso")){
+			yyerror("El nombre de procedimiento ya esta utilizado por una variable u otro procedimiento");
+		}else {
+			addAtributoP(id, nAtt, valor);
+		}
+	}
+	
+	
+	public void addAtributoP(String id, String nAtt, String valor) {
+		Atributo att = new Atributo(nAtt, valor);
+		int ultP = this.ambito.lastIndexOf(".");
+		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString().substring(0, ultP));
+		if(!hs.containsKey(nAtt) && !hs.containsKey("Tipo")) {
+			hs.put(att.getNombre(), att);
+		}
+		else {
+			yyerror("Se esta intentando cambiar un atributo o ese identificador ya esta utilizado como variable");
+		}
+	}
+	
+	public void addAtributo(String id, String nAtt, String valor) {
+		Atributo att = new Atributo(nAtt, valor);
+		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString());
+		if(!hs.containsKey(nAtt)) {
+			hs.put(att.getNombre(), att);
+		}
+		else {
+			System.out.println("Se esta intentando cambiar un atributo");
+		}
+	}
 
 	
 	private int yylex() {
@@ -316,6 +369,18 @@ private Lexico lexer;
 			}else {
 				if (!tSimbolos.containsKey(token.getKey())) { // Si no existe en tabla de simbolos se crea para ese lexema
 					tSimbolos.put(token.getKey(), hs);
+					if (token.getValue() == CTE_FLOAT) {
+						Atributo tipo = new Atributo("Tipo", "FLOAT");
+						Atributo uso = new Atributo("Uso", "constante");
+						hs.put("Tipo", tipo);
+						hs.put("Uso", uso);
+					}
+					if (token.getValue() == CTE_INT) {
+						Atributo tipo = new Atributo("Tipo", "INTEGER");
+						Atributo uso = new Atributo("Uso", "constante");
+						hs.put("Tipo", tipo);
+						hs.put("Uso", uso);
+					}
 				} else {
 					hs = tSimbolos.get(token.getKey());
 					int cant = (int)hs.get("Referencias").getValue();
