@@ -18,8 +18,10 @@ import java.util.StringTokenizer;
 programa 	: cuerpo {agregarEstructura("Se termino de compilar el programa correctamente");}
 ;
 
-parametros 	: parametros ',' ID
-			| ID
+parametros 	: parametros ',' ID {setTipo($3.sval, lastTipo.toString());
+								addAtributo($3.sval,"Uso", "nombre de variable");}
+			| ID {setTipo($1.sval, lastTipo.toString());
+				addAtributo($1.sval,"Uso", "nombre de variable");}
 			| parametros ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");}
 ;	
 
@@ -32,8 +34,8 @@ parametrosinvo 	: ID
 
 
 
-tipo		: INTEGER
-			| FLOAT
+tipo		: INTEGER {this.lastTipo = new StringBuffer($1.sval);}
+			| FLOAT {this.lastTipo = new StringBuffer($1.sval);}
 ;
 						
 
@@ -54,11 +56,24 @@ declarativa	: procedure
 ;
 
 
-procedure	: PROC ID '(' lp ')' '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $8.ival);}
-			| PROC ID '(' lp ')' NA '=' factor ',' SHADOWING '=' boolean '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $15.ival);}
-			| PROC ID '(' ')' '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival+ " hasta linea " + $7.ival);}
-			| PROC ID '(' ')' NA '=' factor ',' SHADOWING '=' boolean '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $14.ival);}		
+procedure	: proc procdef '{' cuerpo '}' {agregarEstructura("PROCEDURE en linea " + $1.ival + " hasta linea " + $5.ival);
+															reducirAmbito();}
 ;	
+
+
+proc : PROC ID {incrementarAmbito($2.sval);
+				this.ultProc = new StringBuffer($2.sval);
+				addAtributoPDec(this.ultProc.toString(),"Uso", "nombre de procedimiento");}
+;
+
+procdef : 	  '(' lp ')'
+			| '(' lp ')' NA '=' factor ',' SHADOWING '=' boolean {addAtributoP( this.ultProc.toString(),"NA", $6.sval);
+																addAtributoP( this.ultProc.toString(),"SHADOWING", $10.sval);}
+			| '(' ')'
+			| '(' ')' NA '=' factor ',' SHADOWING '=' boolean {} {addAtributoP(this.ultProc.toString(),"NA", $5.sval);
+																addAtributoP(this.ultProc.toString(),"SHADOWING", $9.sval);}
+;
+
 
 ejecutable	: asignacion
 			| salida
@@ -68,7 +83,8 @@ ejecutable	: asignacion
 			| error ';'  {yyerror($2.ival,"Error sintactico en sentencia ejecutable");}
 ;			
 
-declaracion	: tipo parametros ';' {agregarEstructura("SENTENCIA DECLARATIVA en linea " + $1.ival + " hasta linea " + $3.ival);}
+declaracion	: tipo parametros ';' {agregarEstructura("SENTENCIA DECLARATIVA en linea " + $1.ival + " hasta linea " + $3.ival);
+									System.out.println("Aca andan los paramentro pa: " + $2.sval +"  " + $1.sval);}
 ;
 
 
@@ -99,11 +115,28 @@ comparador	: COMP_IGUAL
 			| '>'
 ;
 
-lp 		: tipo ID
-			| tipo ID ',' tipo ID
-			| tipo ID ',' tipo ID ',' tipo ID
-			| tipo ID ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");}
-			| tipo ID ',' tipo ID ',' {yyerror($4.ival,"Parametro faltante luego de la ',' ");}	
+lp 		: tipo ID {setTipo($2.sval, $1.sval);
+					addAtributo($2.sval,"Uso", "nombre de parametro");}
+			| tipo ID ',' tipo ID { setTipo($2.sval, $1.sval);
+									setTipo($5.sval, $4.sval);
+									addAtributo($2.sval,"Uso", "nombre de parametro");
+									addAtributo($5.sval,"Uso", "nombre de parametro");
+									}
+			| tipo ID ',' tipo ID ',' tipo ID { setTipo($2.sval, $1.sval);
+									setTipo($5.sval, $4.sval);
+									setTipo($8.sval, $7.sval);
+									addAtributo($2.sval,"Uso", "nombre de parametro");
+									addAtributo($5.sval,"Uso", "nombre de parametro");
+									addAtributo($8.sval,"Uso", "nombre de parametro");
+									}
+			| tipo ID ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");
+							setTipo($2.sval, $1.sval);
+							addAtributo($2.sval,"Uso", "nombre de parametro");}
+			| tipo ID ',' tipo ID ',' {yyerror($4.ival,"Parametro faltante luego de la ',' ");
+									setTipo($2.sval, $1.sval);
+									setTipo($5.sval, $4.sval);
+									addAtributo($2.sval,"Uso", "nombre de parametro");
+									addAtributo($5.sval,"Uso", "nombre de parametro");}	
 ;
 
 
@@ -123,32 +156,66 @@ termino 	: termino '*' factor
 ;
 
 factor		: ID
- 			| CTE_INT { if ($1.sval.equals("32768")){
-					yyerrorLex("Constante positiva fuera de rango");
-					tSimbolos.replace($1.sval, (tSimbolos.get($1.sval)-1));
-					if (tSimbolos.get($1.sval) == 0)
-						tSimbolos.remove($1.sval);
-					$1.sval="32767";
-					if (!tSimbolos.containsKey($1.sval))
-						tSimbolos.put($1.sval, 1);
-					else 
-						tSimbolos.replace($1.sval, (tSimbolos.get($1.sval)+1));
+ 			| CTE_INT { 
+				 	Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+					int cant = 0;
+					if ($1.sval.equals("32768")){
+						yyerrorLex("Constante positiva fuera de rango");
+						hs = tSimbolos.get($1.sval);
+						cant = (int)hs.get("Referencias").getValue();
+						hs.get("Referencias").setValue(cant--);
+						if ((int)hs.get("Referencias").getValue() == 0)
+							tSimbolos.remove($1.sval);
+						$1.sval="32767";
+						if (!tSimbolos.containsKey($1.sval)){
+							hs = new Hashtable<String, Atributo>();
+							Atributo cantR = new Atributo("Referencias", 1);
+							hs.put(cantR.getNombre(), cantR);
+							tSimbolos.put($1.sval, hs);
+						}
+						else{ 
+							hs = tSimbolos.get($1.sval);
+							cant = (int)hs.get("Referencias").getValue();
+							hs.get("Referencias").setValue(cant++);
+						}
  				}}
 
-			| '-' CTE_INT {	if (!tSimbolos.containsKey("-" +$2.sval))
-								tSimbolos.put("-" +$2.sval, 1);
-							else 
-								tSimbolos.replace("-" + $2.sval, (tSimbolos.get("-" +$2.sval)+1));
-							tSimbolos.replace($2.sval, (tSimbolos.get($2.sval)-1));
-							if (tSimbolos.get($2.sval) == 0)
+			| '-' CTE_INT {	
+							Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+							int cant = 0;
+							if (!tSimbolos.containsKey("-" +$2.sval)){
+								Atributo cantR = new Atributo("Referencias", 1);
+								hs.put(cantR.getNombre(), cantR);
+								tSimbolos.put("-" +$2.sval, hs);
+							}
+							else {
+								hs = tSimbolos.get("-" + $2.sval);
+								cant = (int)hs.get("Referencias").getValue();
+								hs.get("Referencias").setValue(cant++);
+							}
+							hs = tSimbolos.get($2.sval);
+							cant = (int)hs.get("Referencias").getValue();
+							hs.get("Referencias").setValue(cant--);
+							if ((int)tSimbolos.get($2.sval).get("Referencias").getValue() == 0)
 									tSimbolos.remove($2.sval);}
 			| CTE_FLOAT {}
-			| '-' CTE_FLOAT {	if (!tSimbolos.containsKey("-" +$2.sval))
-								tSimbolos.put("-" +$2.sval, 1);
-							else 
-								tSimbolos.replace("-" + $2.sval, (tSimbolos.get("-" +$2.sval)+1));
-							tSimbolos.replace($2.sval, (tSimbolos.get($2.sval)-1));
-							if (tSimbolos.get($2.sval) == 0)
+			| '-' CTE_FLOAT {	
+							Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+							int cant = 0;
+							if (!tSimbolos.containsKey("-" +$2.sval)){
+								Atributo cantR = new Atributo("Referencias", 1);
+								hs.put(cantR.getNombre(), cantR);
+								tSimbolos.put("-" +$2.sval, hs);
+							}
+							else {
+								hs = tSimbolos.get("-" +$2.sval);
+								cant = (int)hs.get("Referencias").getValue();
+								hs.get("Referencias").setValue(cant++);
+							}
+							hs = tSimbolos.get($2.sval);
+							cant = (int)hs.get("Referencias").getValue();
+							hs.get("Referencias").setValue(cant--);
+							if ((int)tSimbolos.get($2.sval).get("Referencias").getValue() == 0)
 									tSimbolos.remove($2.sval);}
 ;
 
@@ -160,7 +227,7 @@ boolean 	: TRUE
 	private Lexico lexer;
 	private int erroresS = 0;
 	public static int nLinea = 1;
-	public Hashtable<String, Integer> tSimbolos = new Hashtable<String, Integer>();
+	public Hashtable<String, Hashtable<String, Atributo>> tSimbolos = new Hashtable<String, Hashtable<String, Atributo>>();
 	private FileWriter txtErrores = null;
 	private static PrintWriter pw = null;
 	private FileWriter txtTokens = null;
@@ -170,7 +237,13 @@ boolean 	: TRUE
 	private FileWriter txtEstruc = null;
 	private static PrintWriter pwEs = null;
 	private StringBuffer buffer = new StringBuffer();
-
+	private StringBuffer ambito = new StringBuffer(".p");
+	private StringBuffer lastTipo = new StringBuffer();
+	private StringBuffer ultProc = new StringBuffer();
+	
+	
+	
+	
 	public int yyparse(String path) throws IOException {
 		//Es la funcion publica con la que el main se comunica y le pasa la direccion del archivo con el codigo
 		//Utiliza la ruta para crear todos los archivos que seran generados
@@ -205,7 +278,7 @@ boolean 	: TRUE
 	public void escribirTablaS() {
 		//escribe todos los datos que se tenga en la tabla de simbolos con la cantidad de referencias
 		tSimbolos.forEach((k, v) -> {
-			pwTa.println("Simbolo: " + k + ", cantidad de referencias: " + v);
+			pwTa.println("Simbolo: " + k + " " + v);
 		});
 	}
 
@@ -219,16 +292,100 @@ boolean 	: TRUE
 		pwEs.println(buffer.toString());
 	}
 	
+	
+	private void reducirAmbito() {
+		int ultP = this.ambito.lastIndexOf(".");
+		this.ambito.delete(ultP, this.ambito.length());
+	}
+	
+	private void incrementarAmbito(String nProc) {
+		this.ambito.append("." + nProc);
+	}
+	
+	private void setTipo(String id, String tipo) {
+		Atributo att = new Atributo("Tipo", tipo);
+		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString());
+		if(!hs.containsKey("Tipo")) {
+			hs.put(att.getNombre(), att);
+		}else {
+			yyerror("Se esta intentando redefinir una variable");
+		}
+	}
+	
+	
+	public void addAtributoPDec(String id, String nAtt, String valor) {
+		int ultP = this.ambito.lastIndexOf(".");
+		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString().substring(0, ultP));
+		if(hs.containsKey("Uso")){
+			yyerror("El nombre de procedimiento ya esta utilizado por una variable u otro procedimiento");
+		}else {
+			addAtributoP(id, nAtt, valor);
+		}
+	}
+	
+	
+	public void addAtributoP(String id, String nAtt, String valor) {
+		Atributo att = new Atributo(nAtt, valor);
+		int ultP = this.ambito.lastIndexOf(".");
+		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString().substring(0, ultP));
+		if(!hs.containsKey(nAtt) && !hs.containsKey("Tipo")) {
+			hs.put(att.getNombre(), att);
+		}
+		else {
+			yyerror("Se esta intentando cambiar un atributo o ese identificador ya esta utilizado como variable");
+		}
+	}
+	
+	public void addAtributo(String id, String nAtt, String valor) {
+		Atributo att = new Atributo(nAtt, valor);
+		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString());
+		if(!hs.containsKey(nAtt)) {
+			hs.put(att.getNombre(), att);
+		}
+		else {
+			System.out.println("Se esta intentando cambiar un atributo");
+		}
+	}
+
+	
 	private int yylex() {
 		Par token = this.lexer.yylex();
 		pwTo.println("Token entregado: " + token.getValue()); // agrega el token entregado al archivo de tokens
 		yylval = new ParserVal(token.getKey());
 		yylval.ival = nLinea; //se utiliza la variable ival de la clase ParserVal para guardar el numero de linea en el que se detecto el token
 		if (token.getKey() != null) { // Si tiene lexema
-			if (!tSimbolos.containsKey(token.getKey())) { // Si no existe en tabla de simbolos se crea para ese lexema
-				tSimbolos.put(token.getKey(), 1);
-			} else {
-				tSimbolos.replace(token.getKey(), (tSimbolos.get(token.getKey()) + 1));
+			Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+			Atributo cantR = new Atributo("Referencias", 1);
+			hs.put(cantR.getNombre(), cantR);
+			if (token.getValue() == ID) {
+				String lexema = token.getKey().concat(this.ambito.toString()); 
+				if (!tSimbolos.containsKey(lexema)) { // Si no existe en tabla de simbolos se crea para ese lexema
+					tSimbolos.put(lexema, hs);
+				} else {
+					hs = tSimbolos.get(lexema);
+					int cant = (int)hs.get("Referencias").getValue();
+					hs.get("Referencias").setValue(cant++);
+				}
+			}else {
+				if (!tSimbolos.containsKey(token.getKey())) { // Si no existe en tabla de simbolos se crea para ese lexema
+					tSimbolos.put(token.getKey(), hs);
+					if (token.getValue() == CTE_FLOAT) {
+						Atributo tipo = new Atributo("Tipo", "FLOAT");
+						Atributo uso = new Atributo("Uso", "constante");
+						hs.put("Tipo", tipo);
+						hs.put("Uso", uso);
+					}
+					if (token.getValue() == CTE_INT) {
+						Atributo tipo = new Atributo("Tipo", "INTEGER");
+						Atributo uso = new Atributo("Uso", "constante");
+						hs.put("Tipo", tipo);
+						hs.put("Uso", uso);
+					}
+				} else {
+					hs = tSimbolos.get(token.getKey());
+					int cant = (int)hs.get("Referencias").getValue();
+					hs.get("Referencias").setValue(cant++);
+				}
 			}
 		}
 		return (int) token.getValue();
@@ -237,19 +394,19 @@ boolean 	: TRUE
 	private void yyerror(String s) {
 		if (!s.equals("syntax error")) { // Ignora el error default de yacc.
 			erroresS++;
-			System.out.println("Error de sintaxis cerca de la línea " + nLinea + ": " + s);
-			pw.println("Error de sintaxis cerca de la línea " + nLinea + ": " + s);
+			System.out.println("Error de sintaxis cerca de la linea " + nLinea + ": " + s);
+			pw.println("Error de sintaxis cerca de la linea " + nLinea + ": " + s);
 		}
 	}
 
 	private void yyerror(int linea, String s) {
 		erroresS++;
 		System.out.println("Linea: " + linea + " - Error: " + s);
-		pw.println("Error de sintaxis cerca de la línea " + linea + ": " + s);
+		pw.println("Error de sintaxis cerca de la linea " + linea + ": " + s);
 	}
 
 	private void yyerrorLex(String s) {
 		// Agrega los errores lexicos que detecta la gramatica	
 		Lexico.erroresL++;
-		pw.println("Error cerca de la línea " + nLinea + ": " + s);
+		pw.println("Error cerca de la linea " + nLinea + ": " + s);
 	}
