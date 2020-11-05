@@ -2,7 +2,6 @@
 package compilador;
 import java.lang.Math;
 import java.util.Hashtable;
-import javafx.util.Pair;
 import java.io.*;
 import java.util.StringTokenizer;
 %}
@@ -18,18 +17,56 @@ import java.util.StringTokenizer;
 programa 	: cuerpo {agregarEstructura("Se termino de compilar el programa correctamente");}
 ;
 
-parametros 	: parametros ',' ID {setTipo($3.sval, lastTipo.toString());
-								addAtributo($3.sval,"Uso", "nombre de variable");}
-			| ID {setTipo($1.sval, lastTipo.toString());
-				addAtributo($1.sval,"Uso", "nombre de variable");}
-			| parametros ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");}
+parametros 	: parametros ',' ID {if(redeclarable($3.sval)){
+									if (setTipo($3.sval, lastTipo.toString()))
+										addAtributo($3.sval,"Uso", "nombre de variable");
+								}else{
+									String var = this.getNombreVariable($3.sval + this.ambito.toString());
+									if (var == null){
+										if(setTipo($3.sval, lastTipo.toString()))
+											addAtributo($3.sval,"Uso", "nombre de variable");
+									}else
+										yyerror("No se permite redeclarar la variable por shadowing");
+								}}
+			| ID {if(redeclarable($1.sval)){
+									if (setTipo($1.sval, lastTipo.toString()))
+										addAtributo($1.sval,"Uso", "nombre de variable");
+								}else{
+									String var = this.getNombreVariable($1.sval + this.ambito.toString());
+									if (var == null){
+										if(setTipo($1.sval, lastTipo.toString()))
+											addAtributo($1.sval,"Uso", "nombre de variable");
+									}else
+										yyerror("No se permite redeclarar la variable por shadowing");
+								}}			| parametros ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");}
 ;	
 
-parametrosinvo 	: ID
-			| ID ',' ID
-			| ID ',' ID ',' ID
-			| ID ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");}
-			| ID ',' ID ',' {yyerror($4.ival,"Parametro faltante luego de la ',' ");}
+parametrosinvo 	: ID { validarDefinicion($1.sval);
+					validarTipo($1.sval,1);
+			}
+			| ID ',' ID { validarDefinicion($1.sval);
+						validarDefinicion($3.sval);
+						validarTipo($1.sval,1);
+						validarTipo($3.sval,2);
+						}
+			| ID ',' ID ',' ID{
+						validarDefinicion($1.sval);
+						validarDefinicion($3.sval);
+						validarDefinicion($5.sval);
+						validarTipo($1.sval,1);
+						validarTipo($3.sval,2);
+						validarTipo($5.sval,3);
+						}
+			| ID ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");
+					 validarDefinicion($1.sval);
+					 validarTipo($1.sval,1);
+					 }
+			| ID ',' ID ',' {yyerror($4.ival,"Parametro faltante luego de la ',' ");
+							 validarDefinicion($1.sval);
+							validarDefinicion($3.sval);
+							validarTipo($1.sval,1);
+							validarTipo($3.sval,2);
+							}
 ;
 
 
@@ -83,18 +120,22 @@ ejecutable	: asignacion
 			| error ';'  {yyerror($2.ival,"Error sintactico en sentencia ejecutable");}
 ;			
 
-declaracion	: tipo parametros ';' {agregarEstructura("SENTENCIA DECLARATIVA en linea " + $1.ival + " hasta linea " + $3.ival);
-									System.out.println("Aca andan los paramentro pa: " + $2.sval +"  " + $1.sval);}
+declaracion	: tipo parametros ';' {agregarEstructura("SENTENCIA DECLARATIVA en linea " + $1.ival + " hasta linea " + $3.ival);}
 ;
 
 
 control 	: WHILE '(' condicion ')' LOOP '{' cuerpowhile '}' ';' {agregarEstructura("SENTENCIA DE CONTROL en linea " + $1.ival);}
 ;
 
-invocacion 	: ID '(' parametrosinvo ')' ';' {agregarEstructura("SENTENCIA DE INVOCACION en linea " + $1.ival);}
+invocacion 	: identificadorFuncion parametrosinvo ')' ';' {agregarEstructura("SENTENCIA DE INVOCACION en linea " + $1.ival);
+											
+											}
 			| ID '(' ')' ';' {agregarEstructura("SENTENCIA DE INVOCACION en linea " + $1.ival);}
 ;
 
+
+identificadorFuncion : ID '(' {ultProc = new StringBuffer($1.sval); }
+;
 
 salida		: OUT '(' CADENA ')' ';' {agregarEstructura("SENTENCIA DE SALIDA en linea: " + $1.ival);}
 ;
@@ -115,35 +156,55 @@ comparador	: COMP_IGUAL
 			| '>'
 ;
 
-lp 		: tipo ID {setTipo($2.sval, $1.sval);
+lp 		: tipo ID {if (setTipo($2.sval, $1.sval))
+						addAtributoP(this.ultProc.toString(), "param1", $1.sval);
 					addAtributo($2.sval,"Uso", "nombre de parametro");}
-			| tipo ID ',' tipo ID { setTipo($2.sval, $1.sval);
-									setTipo($5.sval, $4.sval);
-									addAtributo($2.sval,"Uso", "nombre de parametro");
-									addAtributo($5.sval,"Uso", "nombre de parametro");
+			| tipo ID ',' tipo ID { if(setTipo($2.sval, $1.sval))
+										addAtributo($2.sval,"Uso", "nombre de parametro");
+									if(setTipo($5.sval, $4.sval))
+										addAtributo($5.sval,"Uso", "nombre de parametro");
+									addAtributoP(this.ultProc.toString(), "param1", $1.sval);
+									addAtributoP(this.ultProc.toString(), "param2", $4.sval);
 									}
-			| tipo ID ',' tipo ID ',' tipo ID { setTipo($2.sval, $1.sval);
-									setTipo($5.sval, $4.sval);
-									setTipo($8.sval, $7.sval);
-									addAtributo($2.sval,"Uso", "nombre de parametro");
-									addAtributo($5.sval,"Uso", "nombre de parametro");
-									addAtributo($8.sval,"Uso", "nombre de parametro");
+			| tipo ID ',' tipo ID ',' tipo ID { 
+									if(setTipo($2.sval, $1.sval))
+										addAtributo($2.sval,"Uso", "nombre de parametro");
+									if(setTipo($5.sval, $4.sval))
+										addAtributo($5.sval,"Uso", "nombre de parametro");
+									if (setTipo($8.sval, $7.sval))
+										addAtributo($8.sval,"Uso", "nombre de parametro");
+									addAtributoP(this.ultProc.toString(), "param1", $1.sval);
+									addAtributoP(this.ultProc.toString(), "param2", $4.sval);
+									addAtributoP(this.ultProc.toString(), "param3", $7.sval);
 									}
 			| tipo ID ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");
-							setTipo($2.sval, $1.sval);
-							addAtributo($2.sval,"Uso", "nombre de parametro");}
+							if(setTipo($2.sval, $1.sval))
+								addAtributo($2.sval,"Uso", "nombre de parametro");
+							addAtributoP(this.ultProc.toString(), "param1", $1.sval);
+							}
 			| tipo ID ',' tipo ID ',' {yyerror($4.ival,"Parametro faltante luego de la ',' ");
-									setTipo($2.sval, $1.sval);
-									setTipo($5.sval, $4.sval);
-									addAtributo($2.sval,"Uso", "nombre de parametro");
-									addAtributo($5.sval,"Uso", "nombre de parametro");}	
+									if (setTipo($2.sval, $1.sval))
+										addAtributo($2.sval,"Uso", "nombre de parametro");
+									if (setTipo($5.sval, $4.sval))
+										addAtributo($5.sval,"Uso", "nombre de parametro");
+									addAtributoP(this.ultProc.toString(), "param1", $1.sval);
+									addAtributoP(this.ultProc.toString(), "param2", $4.sval);
+									}	
 ;
 
 
 			
-asignacion	: ID ASSIGN expresion ';' {agregarEstructura("SENTENCIA DE ASIGNACION en linea " + $1.ival + " hasta linea " + $4.ival);}
-			| tipo ID ASSIGN expresion ';'{agregarEstructura("SENTENCIA DE ASIGNACION en linea " + $1.ival + " hasta linea " + $5.ival);}
+asignacion	: ID ASSIGN expresion ';' { validarDefinicion($1.sval);
+									agregarEstructura("SENTENCIA DE ASIGNACION en linea " + $1.ival + " hasta linea " + $4.ival);}
+			| tipo ID ASSIGN expresion ';'{
+									if (redeclarable($2.sval) && setTipo($2.sval, $1.sval))
+										addAtributo($2.sval,"Uso", "nombre de variable");
+									validarDefinicion($2.sval);
+									agregarEstructura("SENTENCIA DE ASIGNACION en linea " + $1.ival + " hasta linea " + $5.ival);}
 ;
+
+
+
 
 expresion	: expresion '+' termino 
  			| expresion '-' termino 
@@ -155,7 +216,7 @@ termino 	: termino '*' factor
  			| factor
 ;
 
-factor		: ID
+factor		: ID {validarDefinicion($1.sval);}
  			| CTE_INT { 
 				 	Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
 					int cant = 0;
@@ -260,7 +321,6 @@ boolean 	: TRUE
 	}
 
 	public static void escribirError(String s) {
-		//Se encarga de cargar los errores detectados en el archivo correspondiente
 		pw.println(s);
 	}
 
@@ -302,14 +362,51 @@ boolean 	: TRUE
 		this.ambito.append("." + nProc);
 	}
 	
-	private void setTipo(String id, String tipo) {
+	private boolean setTipo(String id, String tipo) {
 		Atributo att = new Atributo("Tipo", tipo);
 		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString());
-		if(!hs.containsKey("Tipo")) {
+		if(!hs.containsKey("Uso")) {
 			hs.put(att.getNombre(), att);
+			return true;
 		}else {
-			yyerror("Se esta intentando redefinir una variable");
+			if (hs.containsKey("Tipo"))
+				yyerror("Se esta intentando redefinir una variable");
+			else
+				yyerror("El identificador esta asociado a un procedimiento");
+			return false;
 		}
+	}
+
+	
+	private boolean redeclarable(String id) {
+		System.out.println("REDECLARABLE: " + id);
+		String proc = this.ambito.toString();
+		if(!proc.substring(proc.indexOf("."), proc.length()).equals(".p")) {
+			proc = proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf("."));
+			return shadowing(proc);
+		}
+		return true;
+	}
+	
+	public boolean shadowing(String proc) {
+		//System.out.println(proc + "HOLA");
+		if (tSimbolos.containsKey(proc)) {
+			if (tSimbolos.get(proc).containsKey("SHADOWING")) {
+				System.out.println("SHADOWING:"+tSimbolos.get(proc));
+				if(tSimbolos.get(proc).get("SHADOWING").toString().contains("FALSE")) {
+					//System.out.println("ahora si anda bbto ");
+					return false;
+				}
+			}			//System.out.println(proc.substring(proc.indexOf("."), proc.length()));
+			//System.out.println(proc.substring(proc.indexOf("."), proc.length()).equals(".p"));
+			if(proc.substring(proc.indexOf("."), proc.length()).equals(".p")) {
+				//System.out.println("VA A YAMAR CON: " + proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf(".")));
+				return true;
+			}else
+				return shadowing(proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf(".")));			
+		}
+		System.out.println("NO DEBERIA LLEGAR ACA");
+		return true;
 	}
 	
 	
@@ -325,6 +422,7 @@ boolean 	: TRUE
 	
 	
 	public void addAtributoP(String id, String nAtt, String valor) {
+		System.out.println(nAtt + " VALOR: " + valor);
 		Atributo att = new Atributo(nAtt, valor);
 		int ultP = this.ambito.lastIndexOf(".");
 		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString().substring(0, ultP));
@@ -343,11 +441,89 @@ boolean 	: TRUE
 			hs.put(att.getNombre(), att);
 		}
 		else {
-			System.out.println("Se esta intentando cambiar un atributo");
+			System.out.println("Se esta intentando cambiar un atributo de " + id); //capaz q no tirar este error y solo verificar q no se quiere redefinir
 		}
 	}
 
 	
+	//VALIDA SI LA VARIABLE ESTA DEFINIDA EN EL AMBITO O AMBITOS ALCANZABLES
+	public boolean validarDefinicion(String id) {
+		String var = this.getNombreVariable(id + this.ambito.toString());
+		if (var!= null) {
+			Hashtable<String, Atributo> hs = this.tSimbolos.get(var);
+			if(!hs.containsKey("Tipo") && hs.containsKey("Uso")) { //NO DEBERIA DE ENTRAR NUNCA PQ YA SE BUSCA QUE SEA DE VARIABLE(BORRAR SI ES ASI) 
+				yyerror("Se esta intentando utilizar como variable un identificador asociado a un procedimiento");
+				return true;
+			}else if(!hs.containsKey("Tipo")) {
+				yyerror("La variable que se esta intentando utilizar no esta declarada");
+				return false;
+			}else
+				return true;
+		}else 
+			yyerror("La variable no fue previamente definida");
+		return false;
+	}
+
+
+	public boolean validarTipo(String id, int indice){
+		int ultP = this.ambito.lastIndexOf(".");
+		String proc = this.getNombreProc(this.ultProc + this.ambito.toString().substring(0, ultP));
+		if (proc != null) {
+			if (this.tSimbolos.get(proc).containsKey("param" + indice)) {
+				String tipoParamFormal = (String) this.tSimbolos.get(proc).get("param" + indice).getValue();
+				String tipoParamReal = "";
+				if (validarDefinicion(id)) {
+					tipoParamReal = (String) this.tSimbolos.get(id + this.ambito).get("Tipo").getValue();
+				}
+				if (tipoParamFormal.equals(tipoParamReal)) {
+					return true;
+				}
+				yyerror("Tipo del identificador pasado por parametro real no se corresponde con el parametro formal. Se espera " + tipoParamFormal + " y se recibio " + tipoParamReal);
+				return false;
+			} else {
+				yyerror("Error en al invocacion, numero de paramtros erroneo");
+				return false;
+			}
+		}
+		yyerror("Procedimiento no declarado");
+		return false;
+		
+	}
+
+	
+	public String getNombreVariable(String s1) {
+		if (this.tSimbolos.containsKey(s1)) {
+			if (this.tSimbolos.get(s1).containsKey("Tipo"))
+				return s1;
+			else {
+				if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+					return null;
+				return this.getNombreVariable(s1.substring(0, s1.lastIndexOf(".")));
+			}
+		}
+		else {
+			if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+				return null;
+			return this.getNombreVariable(s1.substring(0, s1.lastIndexOf(".")));
+		}
+	}
+
+	
+	public String getNombreProc(String s1) {
+		if (this.tSimbolos.containsKey(s1)) {
+			if (!this.tSimbolos.get(s1).containsKey("Tipo") && this.tSimbolos.get(s1).containsKey("Uso"))
+				return s1;
+			else
+				return this.getNombreProc(s1.substring(0, s1.lastIndexOf(".")));
+		}
+		else {
+			if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+				return null;
+			return this.getNombreProc(s1.substring(0, s1.lastIndexOf(".")));
+		}
+	}
+	
+
 	private int yylex() {
 		Par token = this.lexer.yylex();
 		pwTo.println("Token entregado: " + token.getValue()); // agrega el token entregado al archivo de tokens

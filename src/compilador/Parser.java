@@ -20,10 +20,9 @@
 package compilador;
 import java.lang.Math;
 import java.util.Hashtable;
-import javafx.util.Pair;
 import java.io.*;
 import java.util.StringTokenizer;
-//#line 24 "Parser.java"
+//#line 23 "Parser.java"
 
 
 
@@ -192,138 +191,138 @@ final static short yylhs[] = {                           -1,
     0,    2,    2,    2,    3,    3,    3,    3,    3,    4,
     4,    1,    1,    1,    1,    7,    7,    5,    5,    8,
    10,   11,   11,   11,   15,   11,    6,    6,    6,    6,
-    6,    6,    9,   20,   19,   19,   17,   18,   18,   21,
-   23,   23,   23,   23,   23,   23,   12,   12,   12,   12,
-   12,   16,   16,   22,   22,   22,   24,   24,   24,   13,
-   13,   13,   13,   13,   14,   14,
+    6,    6,    9,   20,   19,   19,   22,   17,   18,   18,
+   21,   24,   24,   24,   24,   24,   24,   12,   12,   12,
+   12,   12,   16,   16,   23,   23,   23,   25,   25,   25,
+   13,   13,   13,   13,   13,   14,   14,
 };
 final static short yylen[] = {                            2,
     1,    3,    1,    2,    1,    3,    5,    2,    4,    1,
     1,    2,    1,    2,    1,    2,    1,    1,    1,    5,
     2,    3,   10,    2,    0,   10,    1,    1,    1,    1,
-    1,    2,    3,    9,    5,    4,    5,   13,    9,    3,
-    1,    1,    1,    1,    1,    1,    2,    5,    8,    3,
-    6,    4,    5,    3,    3,    1,    3,    3,    1,    1,
-    1,    2,    1,    2,    1,    1,
+    1,    2,    3,    9,    4,    4,    2,    5,   13,    9,
+    3,    1,    1,    1,    1,    1,    1,    2,    5,    8,
+    3,    6,    4,    5,    3,    3,    1,    3,    3,    1,
+    1,    1,    2,    1,    2,    1,    1,
 };
 final static short yydefred[] = {                         0,
     0,    0,    0,    0,   10,   11,    0,    0,    0,    0,
     0,   13,   15,   18,   19,    0,   27,   28,   29,   30,
-   31,   32,    0,    0,    0,    0,    0,   21,   12,   14,
-    0,    0,    0,    0,   60,   61,   63,    0,   59,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-   33,    0,    0,    0,    0,   62,   64,   52,    0,    0,
-    0,    0,    0,   36,    0,    0,   41,   42,   43,   44,
-   45,   46,    0,    0,    0,    0,    2,    0,    0,    0,
-    0,    0,    0,   57,   58,    0,   35,    0,    0,   37,
-    0,   53,    0,    0,    0,   20,    0,    0,    0,    0,
-    0,    0,    7,    0,    0,   17,    0,    0,    0,    0,
-    0,    0,    0,    0,   16,    0,    0,    0,    0,   39,
-   34,    0,    0,    0,    0,   65,   66,   25,   49,    0,
-    0,   26,   23,    0,   38,
+   31,    0,   32,    0,    0,    0,    0,    0,   21,   12,
+   14,    0,    0,    0,    0,    0,    0,   61,   62,   64,
+    0,   60,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,   33,    0,    0,    0,    0,    0,    0,   63,   65,
+   53,    0,    0,    0,    0,   36,    0,   42,   43,   44,
+   45,   46,   47,    0,    0,    0,    0,    2,    0,    0,
+    0,    0,    0,   35,    0,    0,   58,   59,    0,    0,
+   38,    0,   54,    0,    0,    0,   20,    0,    0,    0,
+    0,    0,    0,    7,    0,    0,   17,    0,    0,    0,
+    0,    0,    0,    0,    0,   16,    0,    0,    0,    0,
+   40,   34,    0,    0,    0,    0,   66,   67,   25,   50,
+    0,    0,   26,   23,    0,   39,
 };
 final static short yydgoto[] = {                          9,
-   10,   32,   44,   11,   12,   13,  107,   14,   15,   16,
-   34,   54,   39,  128,  132,   17,   18,   19,   20,   21,
-   45,   46,   73,   41,
+   10,   33,   37,   11,   12,   13,  108,   14,   15,   16,
+   35,   55,   42,  129,  133,   17,   18,   19,   20,   21,
+   46,   22,   47,   74,   44,
 };
 final static short yysindex[] = {                      -216,
-  -42,  -25,   -5,   -2,    0,    0,    6, -215,    0, -216,
- -199,    0,    0,    0,    0,   29,    0,    0,    0,    0,
-    0,    0,  -37,  -38,  -37, -207,  -37,    0,    0,    0,
- -189,   15,  -40,  -26,    0,    0,    0, -191,    0,   -9,
-   18,   54,   43,   62,   64,  -23,   65,   66,  -37, -148,
-    0, -169, -146,   71, -216,    0,    0,    0,  -37,  -37,
-  -37,  -37, -144,    0,   56,   -7,    0,    0,    0,    0,
-    0,    0,  -37,   58, -154,   11,    0,   59,   75, -158,
- -119,   18,   18,    0,    0,   78,    0, -216,    2,    0,
-    7,    0,  -37, -196,   63,    0, -134, -100, -181,   81,
- -130,  -37,    0, -174, -128,    0,  -64, -151,   88,   89,
-   12,   77, -189,   80,    0,   73, -196, -142, -216,    0,
-    0, -188, -115,   82,  -82,    0,    0,    0,    0, -188,
- -117,    0,    0,   85,    0,
+  -24,  -25,   30,   34,    0,    0,   51, -240,    0, -216,
+ -190,    0,    0,    0,    0,   52,    0,    0,    0,    0,
+    0, -163,    0,  -42,   54,  -42, -173,  -42,    0,    0,
+    0, -175,  -14,  -40,  -21,   59,   63,    0,    0,    0,
+ -199,    0,   -9,   31,   46,   66,  -23,   67,   68,  -42,
+ -147,    0, -167, -144,   73, -216, -142,   57,    0,    0,
+    0,  -42,  -42,  -42,  -42,    0,   -5,    0,    0,    0,
+    0,    0,    0,  -42,   58, -153,    4,    0,   60,   76,
+ -157, -119,   79,    0,   31,   31,    0,    0, -216,   13,
+    0,    2,    0,  -42, -186,   65,    0, -129, -100, -192,
+   85, -127,  -42,    0, -178, -126,    0,  -64, -150,   89,
+   90,   12,   77, -175,   80,    0,   81, -186, -139, -216,
+    0,    0, -194, -117,   83,  -82,    0,    0,    0,    0,
+ -194, -116,    0,    0,   87,    0,
 };
 final static short yyrindex[] = {                         0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0,  147,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,  150,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0, -106,    0,    0,    0,    0,    0,
+    0,   -6,    0,    0,    0,  112,    0,    0,    0,    0,
+    0,    0,    0,  -41,    0,    0,    0,    0,    0,    0,
+   10,    0,   32,    0,    0,    0,  117,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-   19,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-  -41,  109,    0,    0,    0,    0,    0,    0,    0,   22,
-    0,   28,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,  112,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,  114,   36,
-    0,  -36,  -31,    0,    0,  117,    0,    0,  120,    0,
-    0,    0,    0,  121,    0,    0,  122,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,  124,    0,
-    0,    0,    0,    0,    0,    0,  125,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,  118,
+   38,    0,  121,    0,  -36,  -31,    0,    0,    0,  122,
+    0,    0,    0,    0,  124,    0,    0,  125,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,  128,
+    0,    0,    0,    0,    0,    0,    0,  129,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,
 };
 final static short yygindex[] = {                         0,
-  -39,    0,    0,   -3,    3,    1,    0,    0,    0,    0,
-    0,    0,  -29,   39,    0,    0,    0,    0,    0,    0,
-  143,    4,    0,   35,
+  -43,    0,    0,   -7,    1,   -2,    0,    0,    0,    0,
+    0,    0,  -32,   41,    0,    0,    0,    0,    0,    0,
+  148,    0,   -8,    0,   27,
 };
 final static int YYTABLESIZE=255;
 static short yytable[];
 static { yytable();}
 static void yytable(){
-yytable = new short[]{                         56,
-   52,   56,   43,   56,   54,   96,   54,   38,   54,   55,
-   30,   55,   29,   55,   24,   81,   22,   56,   56,   59,
-   56,   60,   54,   54,  104,   54,   40,   55,   55,   53,
-   55,   84,   85,   59,   25,   60,   71,   26,   72,    1,
-    2,   28,  131,    3,   59,   27,   60,    4,   98,   58,
-    5,    6,   76,   59,    7,   60,    8,   31,   50,   61,
-  114,   47,    3,  100,   62,    4,   56,   57,   33,   92,
-    5,    6,  110,   51,    1,    2,   89,    3,    3,  125,
-    4,   30,    4,   29,   49,    5,    6,  111,  112,    7,
-  101,  126,  127,   82,   83,  105,   55,   63,   30,  106,
-   29,   64,   65,  105,   66,   74,   75,  115,   77,   78,
-   79,   80,   86,  123,   87,   88,   90,   91,   94,   93,
-   95,   97,  103,  102,  108,   30,  109,   29,  113,   99,
-  116,  117,  118,  122,  119,  120,    1,    2,  121,  124,
-    3,  129,  130,  135,    4,  134,    1,    5,    6,    5,
-   24,    7,    8,    8,   47,    1,    2,    6,   22,    3,
-   40,   50,    9,    4,   48,   51,    5,    6,  133,   48,
-    7,    0,    8,    1,    2,    0,    0,    3,    0,    0,
+yytable = new short[]{                         57,
+   53,   57,   41,   57,   55,   97,   55,   31,   55,   56,
+   30,   56,   82,   56,   25,   43,   29,   57,   57,   62,
+   57,   63,   55,   55,  105,   55,   54,   56,   56,   51,
+   56,   87,   88,   62,   23,   63,   72,    3,   73,    1,
+    2,   77,  132,    3,   52,   99,   62,    4,   63,   61,
+    5,    6,    3,    4,    7,   62,    8,   63,   59,   60,
+  115,  101,   93,    1,    2,   90,   32,    3,    4,   26,
+  111,    4,   64,   27,    5,    6,  126,   65,    7,   31,
+    5,    6,   30,  112,  113,  127,  128,  102,   85,   86,
+   28,   34,  106,   36,   45,   48,   31,  107,   50,   30,
+  106,   56,   57,   58,   66,  116,   67,   75,   76,   78,
+  124,   79,   80,   81,   83,   84,   91,   89,   92,   95,
+   94,   96,   98,   31,  100,  103,   30,  104,  109,  110,
+  114,  117,  118,  119,  120,  121,    1,    2,  122,  130,
+    3,  123,  125,  131,    4,  136,  135,    5,    6,    1,
+   37,    7,    5,    8,   24,    1,    2,    8,   48,    3,
+   22,    6,   41,    4,   51,    9,    5,    6,   49,   52,
+    7,  134,    8,    1,    2,   49,    0,    3,    0,    0,
     0,    4,    0,    0,    5,    6,    0,    0,    7,    0,
     8,    1,    2,    0,    0,    3,    0,    0,    0,    4,
     0,    0,    5,    6,    0,    0,    7,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,   42,   35,
-   36,   37,    0,    0,    0,    0,    5,    6,    0,    0,
-    0,    0,    0,   56,   56,   56,   56,    0,   54,   54,
-   54,   54,    0,   55,   55,   55,   55,    0,   23,    0,
-    0,   67,   68,   69,   70,
+    0,    0,    0,    0,   38,   39,   40,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    5,    6,    0,    0,
+    0,    0,    0,   57,   57,   57,   57,    0,   55,   55,
+   55,   55,    0,   56,   56,   56,   56,    0,   24,    0,
+    0,   68,   69,   70,   71,
 };
 }
 static short yycheck[];
 static { yycheck(); }
 static void yycheck() {
 yycheck = new short[] {                         41,
-   41,   43,   41,   45,   41,  125,   43,   45,   45,   41,
-   10,   43,   10,   45,   40,   55,   59,   59,   60,   43,
-   62,   45,   59,   60,  125,   62,   23,   59,   60,   33,
-   62,   61,   62,   43,   40,   45,   60,   40,   62,  256,
-  257,  257,  125,  260,   43,   40,   45,  264,   88,   59,
-  267,  268,   49,   43,  271,   45,  273,  257,   44,   42,
-  125,  269,   44,   93,   47,   44,  258,  259,   40,   59,
-  267,  268,  102,   59,  256,  257,   73,   59,  260,  119,
-   59,   81,  264,   81,  274,  267,  268,  262,  263,  271,
-   94,  280,  281,   59,   60,   99,  123,   44,   98,   99,
-   98,   59,   41,  107,   41,   41,   41,  107,  257,  279,
-  257,   41,  257,  117,   59,  123,   59,  272,   44,   61,
-  279,   44,  257,   61,   44,  125,  257,  125,  257,  123,
-  282,   44,   44,   61,  123,   59,  256,  257,   59,  282,
-  260,  257,   61,   59,  264,  263,    0,  267,  268,   41,
-  123,  271,   41,  273,   41,  256,  257,   41,  123,  260,
-   41,   41,   41,  264,   41,   41,  267,  268,  130,   27,
-  271,   -1,  273,  256,  257,   -1,   -1,  260,   -1,   -1,
+   41,   43,   45,   45,   41,  125,   43,   10,   45,   41,
+   10,   43,   56,   45,   40,   24,  257,   59,   60,   43,
+   62,   45,   59,   60,  125,   62,   34,   59,   60,   44,
+   62,   64,   65,   43,   59,   45,   60,   44,   62,  256,
+  257,   50,  125,  260,   59,   89,   43,  264,   45,   59,
+  267,  268,   59,   44,  271,   43,  273,   45,  258,  259,
+  125,   94,   59,  256,  257,   74,  257,  260,   59,   40,
+  103,  264,   42,   40,  267,  268,  120,   47,  271,   82,
+  267,  268,   82,  262,  263,  280,  281,   95,   62,   63,
+   40,   40,  100,  257,   41,  269,   99,  100,  274,   99,
+  108,  123,   44,   41,   59,  108,   41,   41,   41,  257,
+  118,  279,  257,   41,  257,   59,   59,  123,  272,   44,
+   61,  279,   44,  126,  123,   61,  126,  257,   44,  257,
+  257,  282,   44,   44,  123,   59,  256,  257,   59,  257,
+  260,   61,  282,   61,  264,   59,  263,  267,  268,    0,
+  257,  271,   41,  273,  123,  256,  257,   41,   41,  260,
+  123,   41,   41,  264,   41,   41,  267,  268,   41,   41,
+  271,  131,  273,  256,  257,   28,   -1,  260,   -1,   -1,
    -1,  264,   -1,   -1,  267,  268,   -1,   -1,  271,   -1,
   273,  256,  257,   -1,   -1,  260,   -1,   -1,   -1,  264,
    -1,   -1,  267,  268,   -1,   -1,  271,   -1,   -1,   -1,
-   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,  257,  257,
-  258,  259,   -1,   -1,   -1,   -1,  267,  268,   -1,   -1,
+   -1,   -1,   -1,   -1,  257,  258,  259,   -1,   -1,   -1,
+   -1,   -1,   -1,   -1,   -1,   -1,  267,  268,   -1,   -1,
    -1,   -1,   -1,  275,  276,  277,  278,   -1,  275,  276,
   277,  278,   -1,  275,  276,  277,  278,   -1,  274,   -1,
    -1,  275,  276,  277,  278,
@@ -389,8 +388,9 @@ final static String yyrule[] = {
 "ejecutable : error ';'",
 "declaracion : tipo parametros ';'",
 "control : WHILE '(' condicion ')' LOOP '{' cuerpowhile '}' ';'",
-"invocacion : ID '(' parametrosinvo ')' ';'",
+"invocacion : identificadorFuncion parametrosinvo ')' ';'",
 "invocacion : ID '(' ')' ';'",
+"identificadorFuncion : ID '('",
 "salida : OUT '(' CADENA ')' ';'",
 "seleccion : IF '(' condicion ')' '{' cuerpo '}' ELSE '{' cuerpo '}' END_IF ';'",
 "seleccion : IF '(' condicion ')' '{' cuerpo '}' END_IF ';'",
@@ -423,7 +423,7 @@ final static String yyrule[] = {
 "boolean : FALSE",
 };
 
-//#line 227 "gramatica.y"
+//#line 288 "gramatica.y"
 	private Lexico lexer;
 	private int erroresS = 0;
 	public static int nLinea = 1;
@@ -460,7 +460,6 @@ final static String yyrule[] = {
 	}
 
 	public static void escribirError(String s) {
-		//Se encarga de cargar los errores detectados en el archivo correspondiente
 		pw.println(s);
 	}
 
@@ -502,14 +501,51 @@ final static String yyrule[] = {
 		this.ambito.append("." + nProc);
 	}
 	
-	private void setTipo(String id, String tipo) {
+	private boolean setTipo(String id, String tipo) {
 		Atributo att = new Atributo("Tipo", tipo);
 		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString());
-		if(!hs.containsKey("Tipo")) {
+		if(!hs.containsKey("Uso")) {
 			hs.put(att.getNombre(), att);
+			return true;
 		}else {
-			yyerror("Se esta intentando redefinir una variable");
+			if (hs.containsKey("Tipo"))
+				yyerror("Se esta intentando redefinir una variable");
+			else
+				yyerror("El identificador esta asociado a un procedimiento");
+			return false;
 		}
+	}
+
+	
+	private boolean redeclarable(String id) {
+		System.out.println("REDECLARABLE: " + id);
+		String proc = this.ambito.toString();
+		if(!proc.substring(proc.indexOf("."), proc.length()).equals(".p")) {
+			proc = proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf("."));
+			return shadowing(proc);
+		}
+		return true;
+	}
+	
+	public boolean shadowing(String proc) {
+		//System.out.println(proc + "HOLA");
+		if (tSimbolos.containsKey(proc)) {
+			if (tSimbolos.get(proc).containsKey("SHADOWING")) {
+				System.out.println("SHADOWING:"+tSimbolos.get(proc));
+				if(tSimbolos.get(proc).get("SHADOWING").toString().contains("FALSE")) {
+					//System.out.println("ahora si anda bbto ");
+					return false;
+				}
+			}			//System.out.println(proc.substring(proc.indexOf("."), proc.length()));
+			//System.out.println(proc.substring(proc.indexOf("."), proc.length()).equals(".p"));
+			if(proc.substring(proc.indexOf("."), proc.length()).equals(".p")) {
+				//System.out.println("VA A YAMAR CON: " + proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf(".")));
+				return true;
+			}else
+				return shadowing(proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf(".")));			
+		}
+		System.out.println("NO DEBERIA LLEGAR ACA");
+		return true;
 	}
 	
 	
@@ -525,6 +561,7 @@ final static String yyrule[] = {
 	
 	
 	public void addAtributoP(String id, String nAtt, String valor) {
+		System.out.println(nAtt + " VALOR: " + valor);
 		Atributo att = new Atributo(nAtt, valor);
 		int ultP = this.ambito.lastIndexOf(".");
 		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString().substring(0, ultP));
@@ -543,11 +580,89 @@ final static String yyrule[] = {
 			hs.put(att.getNombre(), att);
 		}
 		else {
-			System.out.println("Se esta intentando cambiar un atributo");
+			System.out.println("Se esta intentando cambiar un atributo de " + id); //capaz q no tirar este error y solo verificar q no se quiere redefinir
 		}
 	}
 
 	
+	//VALIDA SI LA VARIABLE ESTA DEFINIDA EN EL AMBITO O AMBITOS ALCANZABLES
+	public boolean validarDefinicion(String id) {
+		String var = this.getNombreVariable(id + this.ambito.toString());
+		if (var!= null) {
+			Hashtable<String, Atributo> hs = this.tSimbolos.get(var);
+			if(!hs.containsKey("Tipo") && hs.containsKey("Uso")) { //NO DEBERIA DE ENTRAR NUNCA PQ YA SE BUSCA QUE SEA DE VARIABLE(BORRAR SI ES ASI) 
+				yyerror("Se esta intentando utilizar como variable un identificador asociado a un procedimiento");
+				return true;
+			}else if(!hs.containsKey("Tipo")) {
+				yyerror("La variable que se esta intentando utilizar no esta declarada");
+				return false;
+			}else
+				return true;
+		}else 
+			yyerror("La variable no fue previamente definida");
+		return false;
+	}
+
+
+	public boolean validarTipo(String id, int indice){
+		int ultP = this.ambito.lastIndexOf(".");
+		String proc = this.getNombreProc(this.ultProc + this.ambito.toString().substring(0, ultP));
+		if (proc != null) {
+			if (this.tSimbolos.get(proc).containsKey("param" + indice)) {
+				String tipoParamFormal = (String) this.tSimbolos.get(proc).get("param" + indice).getValue();
+				String tipoParamReal = "";
+				if (validarDefinicion(id)) {
+					tipoParamReal = (String) this.tSimbolos.get(id + this.ambito).get("Tipo").getValue();
+				}
+				if (tipoParamFormal.equals(tipoParamReal)) {
+					return true;
+				}
+				yyerror("Tipo del identificador pasado por parametro real no se corresponde con el parametro formal. Se espera " + tipoParamFormal + " y se recibio " + tipoParamReal);
+				return false;
+			} else {
+				yyerror("Error en al invocacion, numero de paramtros erroneo");
+				return false;
+			}
+		}
+		yyerror("Procedimiento no declarado");
+		return false;
+		
+	}
+
+	
+	public String getNombreVariable(String s1) {
+		if (this.tSimbolos.containsKey(s1)) {
+			if (this.tSimbolos.get(s1).containsKey("Tipo"))
+				return s1;
+			else {
+				if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+					return null;
+				return this.getNombreVariable(s1.substring(0, s1.lastIndexOf(".")));
+			}
+		}
+		else {
+			if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+				return null;
+			return this.getNombreVariable(s1.substring(0, s1.lastIndexOf(".")));
+		}
+	}
+
+	
+	public String getNombreProc(String s1) {
+		if (this.tSimbolos.containsKey(s1)) {
+			if (!this.tSimbolos.get(s1).containsKey("Tipo") && this.tSimbolos.get(s1).containsKey("Uso"))
+				return s1;
+			else
+				return this.getNombreProc(s1.substring(0, s1.lastIndexOf(".")));
+		}
+		else {
+			if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+				return null;
+			return this.getNombreProc(s1.substring(0, s1.lastIndexOf(".")));
+		}
+	}
+	
+
 	private int yylex() {
 		Par token = this.lexer.yylex();
 		pwTo.println("Token entregado: " + token.getValue()); // agrega el token entregado al archivo de tokens
@@ -610,7 +725,7 @@ final static String yyrule[] = {
 		Lexico.erroresL++;
 		pw.println("Error cerca de la linea " + nLinea + ": " + s);
 	}
-//#line 542 "Parser.java"
+//#line 657 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -765,144 +880,221 @@ boolean doaction;
       {
 //########## USER-SUPPLIED ACTIONS ##########
 case 1:
-//#line 18 "gramatica.y"
+//#line 17 "gramatica.y"
 {agregarEstructura("Se termino de compilar el programa correctamente");}
 break;
 case 2:
-//#line 21 "gramatica.y"
-{setTipo(val_peek(0).sval, lastTipo.toString());
-								addAtributo(val_peek(0).sval,"Uso", "nombre de variable");}
+//#line 20 "gramatica.y"
+{if(redeclarable(val_peek(0).sval)){
+									if (setTipo(val_peek(0).sval, lastTipo.toString()))
+										addAtributo(val_peek(0).sval,"Uso", "nombre de variable");
+								}else{
+									String var = this.getNombreVariable(val_peek(0).sval + this.ambito.toString());
+									if (var == null){
+										if(setTipo(val_peek(0).sval, lastTipo.toString()))
+											addAtributo(val_peek(0).sval,"Uso", "nombre de variable");
+									}else
+										yyerror("No se permite redeclarar la variable por shadowing");
+								}}
 break;
 case 3:
-//#line 23 "gramatica.y"
-{setTipo(val_peek(0).sval, lastTipo.toString());
-				addAtributo(val_peek(0).sval,"Uso", "nombre de variable");}
+//#line 31 "gramatica.y"
+{if(redeclarable(val_peek(0).sval)){
+									if (setTipo(val_peek(0).sval, lastTipo.toString()))
+										addAtributo(val_peek(0).sval,"Uso", "nombre de variable");
+								}else{
+									String var = this.getNombreVariable(val_peek(0).sval + this.ambito.toString());
+									if (var == null){
+										if(setTipo(val_peek(0).sval, lastTipo.toString()))
+											addAtributo(val_peek(0).sval,"Uso", "nombre de variable");
+									}else
+										yyerror("No se permite redeclarar la variable por shadowing");
+								}}
 break;
 case 4:
-//#line 25 "gramatica.y"
+//#line 41 "gramatica.y"
 {yyerror(val_peek(0).ival,"Parametro faltante luego de la ',' ");}
+break;
+case 5:
+//#line 44 "gramatica.y"
+{ validarDefinicion(val_peek(0).sval);
+					validarTipo(val_peek(0).sval,1);
+			}
+break;
+case 6:
+//#line 47 "gramatica.y"
+{ validarDefinicion(val_peek(2).sval);
+						validarDefinicion(val_peek(0).sval);
+						validarTipo(val_peek(2).sval,1);
+						validarTipo(val_peek(0).sval,2);
+						}
+break;
+case 7:
+//#line 52 "gramatica.y"
+{
+						validarDefinicion(val_peek(4).sval);
+						validarDefinicion(val_peek(2).sval);
+						validarDefinicion(val_peek(0).sval);
+						validarTipo(val_peek(4).sval,1);
+						validarTipo(val_peek(2).sval,2);
+						validarTipo(val_peek(0).sval,3);
+						}
 break;
 case 8:
-//#line 31 "gramatica.y"
-{yyerror(val_peek(0).ival,"Parametro faltante luego de la ',' ");}
+//#line 60 "gramatica.y"
+{yyerror(val_peek(0).ival,"Parametro faltante luego de la ',' ");
+					 validarDefinicion(val_peek(1).sval);
+					 validarTipo(val_peek(1).sval,1);
+					 }
 break;
 case 9:
-//#line 32 "gramatica.y"
-{yyerror(val_peek(0).ival,"Parametro faltante luego de la ',' ");}
+//#line 64 "gramatica.y"
+{yyerror(val_peek(0).ival,"Parametro faltante luego de la ',' ");
+							 validarDefinicion(val_peek(3).sval);
+							validarDefinicion(val_peek(1).sval);
+							validarTipo(val_peek(3).sval,1);
+							validarTipo(val_peek(1).sval,2);
+							}
 break;
 case 10:
-//#line 37 "gramatica.y"
+//#line 74 "gramatica.y"
 {this.lastTipo = new StringBuffer(val_peek(0).sval);}
 break;
 case 11:
-//#line 38 "gramatica.y"
+//#line 75 "gramatica.y"
 {this.lastTipo = new StringBuffer(val_peek(0).sval);}
 break;
 case 20:
-//#line 59 "gramatica.y"
+//#line 96 "gramatica.y"
 {agregarEstructura("PROCEDURE en linea " + val_peek(4).ival + " hasta linea " + val_peek(0).ival);
 															reducirAmbito();}
 break;
 case 21:
-//#line 64 "gramatica.y"
+//#line 101 "gramatica.y"
 {incrementarAmbito(val_peek(0).sval);
 				this.ultProc = new StringBuffer(val_peek(0).sval);
 				addAtributoPDec(this.ultProc.toString(),"Uso", "nombre de procedimiento");}
 break;
 case 23:
-//#line 70 "gramatica.y"
+//#line 107 "gramatica.y"
 {addAtributoP( this.ultProc.toString(),"NA", val_peek(4).sval);
 																addAtributoP( this.ultProc.toString(),"SHADOWING", val_peek(0).sval);}
 break;
 case 25:
-//#line 73 "gramatica.y"
+//#line 110 "gramatica.y"
 {}
 break;
 case 26:
-//#line 73 "gramatica.y"
+//#line 110 "gramatica.y"
 {addAtributoP(this.ultProc.toString(),"NA", val_peek(5).sval);
 																addAtributoP(this.ultProc.toString(),"SHADOWING", val_peek(1).sval);}
 break;
 case 32:
-//#line 83 "gramatica.y"
+//#line 120 "gramatica.y"
 {yyerror(val_peek(0).ival,"Error sintactico en sentencia ejecutable");}
 break;
 case 33:
-//#line 86 "gramatica.y"
-{agregarEstructura("SENTENCIA DECLARATIVA en linea " + val_peek(2).ival + " hasta linea " + val_peek(0).ival);
-									System.out.println("Aca andan los paramentro pa: " + val_peek(1).sval +"  " + val_peek(2).sval);}
+//#line 123 "gramatica.y"
+{agregarEstructura("SENTENCIA DECLARATIVA en linea " + val_peek(2).ival + " hasta linea " + val_peek(0).ival);}
 break;
 case 34:
-//#line 91 "gramatica.y"
+//#line 127 "gramatica.y"
 {agregarEstructura("SENTENCIA DE CONTROL en linea " + val_peek(8).ival);}
 break;
 case 35:
-//#line 94 "gramatica.y"
-{agregarEstructura("SENTENCIA DE INVOCACION en linea " + val_peek(4).ival);}
+//#line 130 "gramatica.y"
+{agregarEstructura("SENTENCIA DE INVOCACION en linea " + val_peek(3).ival);
+											
+											}
 break;
 case 36:
-//#line 95 "gramatica.y"
+//#line 133 "gramatica.y"
 {agregarEstructura("SENTENCIA DE INVOCACION en linea " + val_peek(3).ival);}
 break;
 case 37:
-//#line 99 "gramatica.y"
-{agregarEstructura("SENTENCIA DE SALIDA en linea: " + val_peek(4).ival);}
+//#line 137 "gramatica.y"
+{ultProc = new StringBuffer(val_peek(1).sval); }
 break;
 case 38:
-//#line 102 "gramatica.y"
-{agregarEstructura("SENTENCIA DE SELECCION en linea " + val_peek(12).ival + " hasta linea " + val_peek(4).ival);}
+//#line 140 "gramatica.y"
+{agregarEstructura("SENTENCIA DE SALIDA en linea: " + val_peek(4).ival);}
 break;
 case 39:
-//#line 103 "gramatica.y"
+//#line 143 "gramatica.y"
+{agregarEstructura("SENTENCIA DE SELECCION en linea " + val_peek(12).ival + " hasta linea " + val_peek(4).ival);}
+break;
+case 40:
+//#line 144 "gramatica.y"
 {agregarEstructura("SENTENCIA DE SELECCION en linea " + val_peek(8).ival + " hasta linea " + val_peek(2).ival);}
 break;
-case 47:
-//#line 118 "gramatica.y"
-{setTipo(val_peek(0).sval, val_peek(1).sval);
+case 48:
+//#line 159 "gramatica.y"
+{if (setTipo(val_peek(0).sval, val_peek(1).sval))
+						addAtributoP(this.ultProc.toString(), "param1", val_peek(1).sval);
 					addAtributo(val_peek(0).sval,"Uso", "nombre de parametro");}
 break;
-case 48:
-//#line 120 "gramatica.y"
-{ setTipo(val_peek(3).sval, val_peek(4).sval);
-									setTipo(val_peek(0).sval, val_peek(1).sval);
-									addAtributo(val_peek(3).sval,"Uso", "nombre de parametro");
-									addAtributo(val_peek(0).sval,"Uso", "nombre de parametro");
-									}
-break;
 case 49:
-//#line 125 "gramatica.y"
-{ setTipo(val_peek(6).sval, val_peek(7).sval);
-									setTipo(val_peek(3).sval, val_peek(4).sval);
-									setTipo(val_peek(0).sval, val_peek(1).sval);
-									addAtributo(val_peek(6).sval,"Uso", "nombre de parametro");
-									addAtributo(val_peek(3).sval,"Uso", "nombre de parametro");
-									addAtributo(val_peek(0).sval,"Uso", "nombre de parametro");
+//#line 162 "gramatica.y"
+{ if(setTipo(val_peek(3).sval, val_peek(4).sval))
+										addAtributo(val_peek(3).sval,"Uso", "nombre de parametro");
+									if(setTipo(val_peek(0).sval, val_peek(1).sval))
+										addAtributo(val_peek(0).sval,"Uso", "nombre de parametro");
+									addAtributoP(this.ultProc.toString(), "param1", val_peek(4).sval);
+									addAtributoP(this.ultProc.toString(), "param2", val_peek(1).sval);
 									}
 break;
 case 50:
-//#line 132 "gramatica.y"
-{yyerror(val_peek(1).ival,"Parametro faltante luego de la ',' ");
-							setTipo(val_peek(1).sval, val_peek(2).sval);
-							addAtributo(val_peek(1).sval,"Uso", "nombre de parametro");}
+//#line 169 "gramatica.y"
+{ 
+									if(setTipo(val_peek(6).sval, val_peek(7).sval))
+										addAtributo(val_peek(6).sval,"Uso", "nombre de parametro");
+									if(setTipo(val_peek(3).sval, val_peek(4).sval))
+										addAtributo(val_peek(3).sval,"Uso", "nombre de parametro");
+									if (setTipo(val_peek(0).sval, val_peek(1).sval))
+										addAtributo(val_peek(0).sval,"Uso", "nombre de parametro");
+									addAtributoP(this.ultProc.toString(), "param1", val_peek(7).sval);
+									addAtributoP(this.ultProc.toString(), "param2", val_peek(4).sval);
+									addAtributoP(this.ultProc.toString(), "param3", val_peek(1).sval);
+									}
 break;
 case 51:
-//#line 135 "gramatica.y"
-{yyerror(val_peek(2).ival,"Parametro faltante luego de la ',' ");
-									setTipo(val_peek(4).sval, val_peek(5).sval);
-									setTipo(val_peek(1).sval, val_peek(2).sval);
-									addAtributo(val_peek(4).sval,"Uso", "nombre de parametro");
-									addAtributo(val_peek(1).sval,"Uso", "nombre de parametro");}
+//#line 180 "gramatica.y"
+{yyerror(val_peek(1).ival,"Parametro faltante luego de la ',' ");
+							if(setTipo(val_peek(1).sval, val_peek(2).sval))
+								addAtributo(val_peek(1).sval,"Uso", "nombre de parametro");
+							addAtributoP(this.ultProc.toString(), "param1", val_peek(2).sval);
+							}
 break;
 case 52:
-//#line 144 "gramatica.y"
-{agregarEstructura("SENTENCIA DE ASIGNACION en linea " + val_peek(3).ival + " hasta linea " + val_peek(0).ival);}
+//#line 185 "gramatica.y"
+{yyerror(val_peek(2).ival,"Parametro faltante luego de la ',' ");
+									if (setTipo(val_peek(4).sval, val_peek(5).sval))
+										addAtributo(val_peek(4).sval,"Uso", "nombre de parametro");
+									if (setTipo(val_peek(1).sval, val_peek(2).sval))
+										addAtributo(val_peek(1).sval,"Uso", "nombre de parametro");
+									addAtributoP(this.ultProc.toString(), "param1", val_peek(5).sval);
+									addAtributoP(this.ultProc.toString(), "param2", val_peek(2).sval);
+									}
 break;
 case 53:
-//#line 145 "gramatica.y"
-{agregarEstructura("SENTENCIA DE ASIGNACION en linea " + val_peek(4).ival + " hasta linea " + val_peek(0).ival);}
+//#line 197 "gramatica.y"
+{ validarDefinicion(val_peek(3).sval);
+									agregarEstructura("SENTENCIA DE ASIGNACION en linea " + val_peek(3).ival + " hasta linea " + val_peek(0).ival);}
+break;
+case 54:
+//#line 199 "gramatica.y"
+{
+									if (redeclarable(val_peek(3).sval) && setTipo(val_peek(3).sval, val_peek(4).sval))
+										addAtributo(val_peek(3).sval,"Uso", "nombre de variable");
+									validarDefinicion(val_peek(3).sval);
+									agregarEstructura("SENTENCIA DE ASIGNACION en linea " + val_peek(4).ival + " hasta linea " + val_peek(0).ival);}
 break;
 case 61:
-//#line 159 "gramatica.y"
+//#line 219 "gramatica.y"
+{validarDefinicion(val_peek(0).sval);}
+break;
+case 62:
+//#line 220 "gramatica.y"
 { 
 				 	Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
 					int cant = 0;
@@ -927,8 +1119,8 @@ case 61:
 						}
  				}}
 break;
-case 62:
-//#line 183 "gramatica.y"
+case 63:
+//#line 244 "gramatica.y"
 {	
 							Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
 							int cant = 0;
@@ -948,12 +1140,12 @@ case 62:
 							if ((int)tSimbolos.get(val_peek(0).sval).get("Referencias").getValue() == 0)
 									tSimbolos.remove(val_peek(0).sval);}
 break;
-case 63:
-//#line 201 "gramatica.y"
+case 64:
+//#line 262 "gramatica.y"
 {}
 break;
-case 64:
-//#line 202 "gramatica.y"
+case 65:
+//#line 263 "gramatica.y"
 {	
 							Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
 							int cant = 0;
@@ -973,7 +1165,7 @@ case 64:
 							if ((int)tSimbolos.get(val_peek(0).sval).get("Referencias").getValue() == 0)
 									tSimbolos.remove(val_peek(0).sval);}
 break;
-//#line 900 "Parser.java"
+//#line 1092 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####
