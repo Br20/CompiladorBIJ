@@ -1,7 +1,9 @@
 %{
 package compilador;
 import java.lang.Math;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.io.*;
 import java.util.StringTokenizer;
 %}
@@ -107,7 +109,7 @@ procdef : 	  '(' lp ')'
 			| '(' lp ')' NA '=' factor ',' SHADOWING '=' boolean {addAtributoP( this.ultProc.toString(),"NA", $6.sval);
 																addAtributoP( this.ultProc.toString(),"SHADOWING", $10.sval);}
 			| '(' ')'
-			| '(' ')' NA '=' factor ',' SHADOWING '=' boolean {} {addAtributoP(this.ultProc.toString(),"NA", $5.sval);
+			| '(' ')' NA '=' factor ',' SHADOWING '=' boolean {addAtributoP(this.ultProc.toString(),"NA", $5.sval);
 																addAtributoP(this.ultProc.toString(),"SHADOWING", $9.sval);}
 ;
 
@@ -140,20 +142,34 @@ identificadorFuncion : ID '(' {ultProc = new StringBuffer($1.sval); }
 salida		: OUT '(' CADENA ')' ';' {agregarEstructura("SENTENCIA DE SALIDA en linea: " + $1.ival);}
 ;
 
-seleccion 	: IF '(' condicion ')' '{' cuerpo '}' ELSE '{' cuerpo '}' END_IF ';' {agregarEstructura("SENTENCIA DE SELECCION en linea " + $1.ival + " hasta linea " + $9.ival);}
-			| IF '(' condicion ')' '{' cuerpo '}' END_IF ';' {agregarEstructura("SENTENCIA DE SELECCION en linea " + $1.ival + " hasta linea " + $7.ival);}
+seleccion 	: ifcondi cuerpoif ELSE '{' cuerpo '}' END_IF ';' {Terceto tInc = colaTercetos.get(colaTercetos.size()-1);
+																tInc.setOp1("["+(Terceto.id)+"]");}
+			| ifcondi cuerpoif END_IF ';' {Terceto tInc = colaTercetos.get(colaTercetos.size()-1);
+											tInc.setOp1("["+(Terceto.id)+"]");}
 ;
 
+cuerpoif : '{' cuerpo '}' { Terceto tInc = colaTercetos.get(colaTercetos.size()-1);
+							tInc.setOp2("["+(Terceto.id+1)+"]");
+							Terceto t = new Terceto("[?]",null,"BI",null);
+							tercetos.add(t);
+							colaTercetos.add(t);
 
-condicion 	:  expresion comparador expresion
+}
 ;
 
-comparador	: COMP_IGUAL
-			| COMP_MENOR_IGUAL
-			| COMP_MAYOR_IGUAL
-			| DISTINTO
-			| '<'
-			| '>'
+ifcondi : IF '(' condicion ')' {Terceto t = new Terceto($3.sval,"[?]","BF", null);
+								tercetos.add(t);
+								colaTercetos.add(t);}
+
+condicion 	:  expresion comparador expresion {$$.sval = "["+agregarTerceto($1.sval,$3.sval,$2.sval).toString()+"]";}
+;
+
+comparador	: COMP_IGUAL {$$.sval = "==";}
+			| COMP_MENOR_IGUAL {$$.sval = "<=";}
+			| COMP_MAYOR_IGUAL {$$.sval = ">=";}
+			| DISTINTO {$$.sval = "!=";}
+			| '<' {$$.sval = "<";}
+			| '>'{$$.sval = ">";}
 ;
 
 lp 		: tipo ID {if (setTipo($2.sval, $1.sval))
@@ -194,25 +210,37 @@ lp 		: tipo ID {if (setTipo($2.sval, $1.sval))
 
 
 			
-asignacion	: ID ASSIGN expresion ';' { validarDefinicion($1.sval);
+asignacion	: ID ASSIGN expresion ';' { if (validarDefinicion($1.sval))
+											agregarTerceto($1.sval,$3.sval,":=");
 									agregarEstructura("SENTENCIA DE ASIGNACION en linea " + $1.ival + " hasta linea " + $4.ival);}
 			| tipo ID ASSIGN expresion ';'{
-									if (redeclarable($2.sval) && setTipo($2.sval, $1.sval))
+								if(redeclarable($2.sval)){
+									if (setTipo($2.sval, lastTipo.toString())){
 										addAtributo($2.sval,"Uso", "nombre de variable");
-									validarDefinicion($2.sval);
-									agregarEstructura("SENTENCIA DE ASIGNACION en linea " + $1.ival + " hasta linea " + $5.ival);}
+										agregarTerceto($2.sval,$4.sval,":=");
+									}
+								}else{
+									String var = this.getNombreVariable($2.sval + this.ambito.toString());
+									if (var == null){
+										if(setTipo($2.sval, lastTipo.toString())){
+											addAtributo($2.sval,"Uso", "nombre de variable");
+											agregarTerceto($2.sval,$4.sval,":=");
+										}
+									}else
+										yyerror("No se permite redeclarar la variable por shadowing");
+								}}
 ;
 
 
 
 
-expresion	: expresion '+' termino 
- 			| expresion '-' termino 
+expresion	: expresion '+' termino {$$.sval = "[" + agregarTerceto($1.sval, $3.sval,"+").toString()+"]";}
+ 			| expresion '-' termino {$$.sval = "[" + agregarTerceto($1.sval, $3.sval,"-").toString()+"]";}
  			| termino
 ;
  
-termino 	: termino '*' factor
- 			| termino '/' factor 
+termino 	: termino '*' factor {$$.sval = "[" + agregarTerceto($1.sval, $3.sval,"*").toString()+"]";}
+ 			| termino '/' factor{$$.sval = "[" + agregarTerceto($1.sval, $3.sval,"/").toString()+"]";}
  			| factor
 ;
 
@@ -257,6 +285,7 @@ factor		: ID {validarDefinicion($1.sval);}
 							hs = tSimbolos.get($2.sval);
 							cant = (int)hs.get("Referencias").getValue();
 							hs.get("Referencias").setValue(cant--);
+							$$.sval = "-" +$2.sval;
 							if ((int)tSimbolos.get($2.sval).get("Referencias").getValue() == 0)
 									tSimbolos.remove($2.sval);}
 			| CTE_FLOAT {}
@@ -276,6 +305,7 @@ factor		: ID {validarDefinicion($1.sval);}
 							hs = tSimbolos.get($2.sval);
 							cant = (int)hs.get("Referencias").getValue();
 							hs.get("Referencias").setValue(cant--);
+							$$.sval = "-" + $2.sval;
 							if ((int)tSimbolos.get($2.sval).get("Referencias").getValue() == 0)
 									tSimbolos.remove($2.sval);}
 ;
@@ -301,7 +331,13 @@ boolean 	: TRUE
 	private StringBuffer ambito = new StringBuffer(".p");
 	private StringBuffer lastTipo = new StringBuffer();
 	private StringBuffer ultProc = new StringBuffer();
-	
+	private List<Terceto> tercetos = new ArrayList<Terceto>();
+	private List<Terceto> colaTercetos = new ArrayList<Terceto>();
+	private String [][] matSuma = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
+	private String [][] matResta = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
+	private String [][] matMult = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
+	private String [][] matDiv = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
+	private String [][] matAsig = {{"INTEGER","X"},{"FLOAT","FLOAT"}};
 	
 	
 	
@@ -317,8 +353,39 @@ boolean 	: TRUE
 		pwTa = new PrintWriter(txtTabla);
 		txtEstruc = new FileWriter(path.substring(0, path.indexOf('.')) + "Estructura.txt");
 		pwEs = new PrintWriter(txtEstruc);
+		escribirCodigoConLineas(path);
 		return yyparse();
 	}
+	
+	
+	private void escribirCodigoConLineas(String path) throws IOException {
+	    PrintWriter escritor = new PrintWriter(new BufferedWriter(new FileWriter(path.substring(0, path.indexOf('.')) + "ConNroLinea.txt")));
+	    BufferedReader lector = null;
+	    int nroLinea = 1;
+	    try {
+	        lector = new BufferedReader(new FileReader(path));
+	        String linea = lector.readLine();
+	        while(linea != null)
+	        {
+	            escritor.write(nroLinea + "- "+ linea + "\n");
+	            nroLinea++;
+	            linea = lector.readLine();
+	        }
+	     }
+	     catch (FileNotFoundException e) {
+	         System.out.println("Error: Fichero no encontrado");
+	         System.out.println(e.getMessage());
+	     }
+	    escritor.close();
+	    lector.close();
+	}
+	
+	public void imprimirTercetos() {
+		for (Terceto t : tercetos) {
+			System.out.println(t.toString());
+		}
+	}
+
 
 	public static void escribirError(String s) {
 		pw.println(s);
@@ -354,15 +421,19 @@ boolean 	: TRUE
 	
 	
 	private void reducirAmbito() {
+		//Metodo invocado cuando el sintactico termina de leer un procedimiento, reduce el ambito sacando el nombre de ese procedimiento
 		int ultP = this.ambito.lastIndexOf(".");
 		this.ambito.delete(ultP, this.ambito.length());
 	}
 	
 	private void incrementarAmbito(String nProc) {
+		//Metodo invocado cuando el sintactico lee la definicion de un procedimiento, agrega el nombre al ambito actual.
 		this.ambito.append("." + nProc);
 	}
 	
 	private boolean setTipo(String id, String tipo) {
+		//Metodo invocado en la definicion de variables, si no tiene el atributo "Uso" quiere decir que este id no esta asociado a ninguna 
+		//variable ni procedimiento, si la puede definir retorna true en caso de que si se pueda definir(GRAMATICA)
 		Atributo att = new Atributo("Tipo", tipo);
 		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString());
 		if(!hs.containsKey("Uso")) {
@@ -378,8 +449,89 @@ boolean 	: TRUE
 	}
 
 	
+		private Integer agregarTerceto(String op1, String op2, String operador) {
+		String tipo = null;
+		System.out.println("op1 " + op1+ " op2 " + op2 + " operador " + operador);
+		if (!tSimbolos.containsKey(op1) ) {
+			//System.out.println(op1 + this.ambito);
+			op1 = getNombreVariable(op1+this.ambito);
+		}
+		if (!tSimbolos.containsKey(op2)) {
+			//System.out.println(op2 + this.ambito);
+			op2 = getNombreVariable(op2+this.ambito);
+		}
+		System.out.println("DESPUES de modificar op1 " + op1+ " op2 " + op2 + " operador " + operador);
+		if (op1!=null && op2!=null) {
+			String t1 = tSimbolos.get(op1).get("Tipo").getValue().toString();
+			String t2 = tSimbolos.get(op1).get("Tipo").getValue().toString();
+			switch (operador) {
+			case "+":
+				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
+					tipo = matSuma[0][0];
+				if (t1.equals("INTEGER") && t2.equals("FLOAT"))
+					tipo = matSuma[0][1];
+				if (t1.equals("FLOAT") && t2.equals("INTEGER"))
+					tipo = matSuma[1][0];
+				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
+					tipo = matSuma[1][1];
+			case "-":
+				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
+					tipo = matResta[0][0];
+				if (t1.equals("INTEGER") && t2.equals("FLOAT"))
+					tipo = matResta[0][1];
+				if (t1.equals("FLOAT") && t2.equals("INTEGER"))
+					tipo = matResta[1][0];
+				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
+					tipo = matResta[1][1];
+			case "/":
+				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
+					tipo = matMult[0][0];
+				if (t1.equals("INTEGER") && t2.equals("FLOAT"))
+					tipo = matMult[0][1];
+				if (t1.equals("FLOAT") && t2.equals("INTEGER"))
+					tipo = matMult[1][0];
+				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
+					tipo = matMult[1][1];
+			case "*":
+				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
+					tipo = matDiv[0][0];
+				if (t1.equals("INTEGER") && t2.equals("FLOAT"))
+					tipo = matDiv[0][1];
+				if (t1.equals("FLOAT") && t2.equals("INTEGER"))
+					tipo = matDiv[1][0];
+				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
+					tipo = matDiv[1][1];
+			case ":=":
+				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
+					tipo = matAsig[0][0];
+				if (t1.equals("INTEGER") && t2.equals("FLOAT"))
+					tipo = matAsig[0][1];
+				if (t1.equals("FLOAT") && t2.equals("INTEGER"))
+					tipo = matAsig[1][0];
+				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
+					tipo = matAsig[1][1];
+			default:
+				break;
+			}
+		}
+		Terceto t = new Terceto(op1,op2,operador,tipo);
+		if (tipo!=null) {
+			Atributo a = new Atributo("Tipo", tipo);
+			Atributo a2 = new Atributo("Uso", "terceto");
+			Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
+			hs.put(a.getNombre(), a);
+			hs.put(a2.getNombre(),a2);
+			tSimbolos.put("["+t.getId()+"]", hs);
+			System.out.println("AGREGAAAA TERCETO op1 " + op1+ " op2 " + op2 + " operador " + operador);
+ 		}
+		tercetos.add(t);
+		
+		return t.getId();
+	}
+	
+	
 	private boolean redeclarable(String id) {
-		System.out.println("REDECLARABLE: " + id);
+		//Este metodo saca el ultimo procedimiento para llamar al metodo recursivo "shadowing"
 		String proc = this.ambito.toString();
 		if(!proc.substring(proc.indexOf("."), proc.length()).equals(".p")) {
 			proc = proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf("."));
@@ -389,18 +541,15 @@ boolean 	: TRUE
 	}
 	
 	public boolean shadowing(String proc) {
-		//System.out.println(proc + "HOLA");
-		if (tSimbolos.containsKey(proc)) {
-			if (tSimbolos.get(proc).containsKey("SHADOWING")) {
-				System.out.println("SHADOWING:"+tSimbolos.get(proc));
+		//Verifica si en los ambitos anidados o el mismo hay una definicion de SHADOWING = FALSE indicando que no se pueden redeclarar 
+		//variables en distintos ambitos
+		if (tSimbolos.containsKey(proc)) { //No se si es necesario (Deberia de estar siempre definido)
+			if (tSimbolos.get(proc).containsKey("SHADOWING")) { //Se fija si la definicion del procedimiento tiene el parametro "SHADOWING"
 				if(tSimbolos.get(proc).get("SHADOWING").toString().contains("FALSE")) {
-					//System.out.println("ahora si anda bbto ");
 					return false;
 				}
-			}			//System.out.println(proc.substring(proc.indexOf("."), proc.length()));
-			//System.out.println(proc.substring(proc.indexOf("."), proc.length()).equals(".p"));
-			if(proc.substring(proc.indexOf("."), proc.length()).equals(".p")) {
-				//System.out.println("VA A YAMAR CON: " + proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf(".")));
+			}			
+			if(proc.substring(proc.indexOf("."), proc.length()).equals(".p")) { //Ya recorrio todos los ambitos anidados por lo q retorna true
 				return true;
 			}else
 				return shadowing(proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf(".")));			
@@ -446,7 +595,7 @@ boolean 	: TRUE
 	}
 
 	
-	//VALIDA SI LA VARIABLE ESTA DEFINIDA EN EL AMBITO O AMBITOS ALCANZABLES
+	//VALIDA SI LA VARIABLE ESTA DEFINIDA EN EL AMBITO O AMBITOS ALCANZABLES PARA PODER USARLA
 	public boolean validarDefinicion(String id) {
 		String var = this.getNombreVariable(id + this.ambito.toString());
 		if (var!= null) {
@@ -466,8 +615,10 @@ boolean 	: TRUE
 
 
 	public boolean validarTipo(String id, int indice){
+		//VALIDA QUE EN LAS INVOCACIONES A PROCEDIMIENTOS ESTEN BIEN LA CANTIDAD DE PARAMETROS Y LOS TIPOS (LO HACE UNO 
+		//A UNO A MEDIDA QUE LOS RECONOCE EN LA GRAMATICA)
 		int ultP = this.ambito.lastIndexOf(".");
-		String proc = this.getNombreProc(this.ultProc + this.ambito.toString().substring(0, ultP));
+		String proc = this.getNombreProc(this.ultProc + this.ambito.toString().substring(0, ultP)); //BUSCA EL PROCEDIMIENTO MAS PROXIMO DEFINIDO EN AMBITOS
 		if (proc != null) {
 			if (this.tSimbolos.get(proc).containsKey("param" + indice)) {
 				String tipoParamFormal = (String) this.tSimbolos.get(proc).get("param" + indice).getValue();
@@ -480,7 +631,7 @@ boolean 	: TRUE
 				}
 				yyerror("Tipo del identificador pasado por parametro real no se corresponde con el parametro formal. Se espera " + tipoParamFormal + " y se recibio " + tipoParamReal);
 				return false;
-			} else {
+			} else { 
 				yyerror("Error en al invocacion, numero de paramtros erroneo");
 				return false;
 			}
@@ -492,6 +643,7 @@ boolean 	: TRUE
 
 	
 	public String getNombreVariable(String s1) {
+		//BUSCA RECURSIVAMENTE SEGUN EL ID SI LA VARIABLE ESTA DEFINIDA EN ALGUNO DE LOS AMBITOS ALCANZABLES, SI NO FUE DEFINIDA DEVUELVE NULL
 		if (this.tSimbolos.containsKey(s1)) {
 			if (this.tSimbolos.get(s1).containsKey("Tipo"))
 				return s1;
@@ -510,6 +662,7 @@ boolean 	: TRUE
 
 	
 	public String getNombreProc(String s1) {
+		//BUSCA RECURSIVAMENTE SEGUN EL ID SI EL PROCEDIMIENTO ESTA DEFINIDA EN ALGUNO DE LOS AMBITOS ALCANZABLES, SI NO FUE DEFINIDA DEVUELVE NULL
 		if (this.tSimbolos.containsKey(s1)) {
 			if (!this.tSimbolos.get(s1).containsKey("Tipo") && this.tSimbolos.get(s1).containsKey("Uso"))
 				return s1;
