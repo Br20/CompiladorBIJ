@@ -10,6 +10,7 @@ public class Terceto {
 	private String operador;
 	private String tipo = null;
 	private String reg = null;
+	private int toConv = 0;
 	
 	public Terceto(String op1, String op2, String operador, String tipo) {
 		numTerceto = id;
@@ -17,6 +18,14 @@ public class Terceto {
 		this.op1 = op1; 
 		this.op2 = op2;
 		this.operador = operador;
+	}
+	
+	public void setToConv(int opToConv){
+		this.toConv = opToConv;
+	}
+	
+	public int getToConv(){
+		return this.toConv;
 	}
 	
 	

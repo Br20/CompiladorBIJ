@@ -45,30 +45,45 @@ parametros 	: parametros ',' ID {if(redeclarable($3.sval)){
 ;	
 
 parametrosinvo 	: ID { validarDefinicion($1.sval);
-					validarTipo($1.sval,1,1);
-			}
+					if (validarTipo($1.sval,1,3)){
+									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
+									tercetos.add(t);
+								}
+					}
 			| ID ',' ID { validarDefinicion($1.sval);
 						validarDefinicion($3.sval);
-						validarTipo($1.sval,1,2);
-						validarTipo($3.sval,2,2);
+						if (validarTipo($1.sval,1,3))
+							if (validarTipo($3.sval,2,3)){
+									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
+									tercetos.add(t);
+								}
 						}
 			| ID ',' ID ',' ID{
 						validarDefinicion($1.sval);
 						validarDefinicion($3.sval);
 						validarDefinicion($5.sval);
-						validarTipo($1.sval,1,3);
-						validarTipo($3.sval,2,3);
-						validarTipo($5.sval,3,3);
+						if (validarTipo($1.sval,1,3))
+							if (validarTipo($3.sval,2,3))
+								if (validarTipo($5.sval,3,3)){
+									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
+									tercetos.add(t);
+								}
 						}
 			| ID ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");
 					 validarDefinicion($1.sval);
-					 validarTipo($1.sval,1,1);
+					 if (validarTipo($1.sval,1,1)){
+						 Terceto t = new Terceto(ultProc.toString(), null, "P",null);
+									tercetos.add(t);
+					 }
 					 }
 			| ID ',' ID ',' {yyerror($4.ival,"Parametro faltante luego de la ',' ");
 							 validarDefinicion($1.sval);
 							validarDefinicion($3.sval);
-							validarTipo($1.sval,1,2);
-							validarTipo($3.sval,2,2);
+							if (validarTipo($1.sval,1,3))
+								if (validarTipo($3.sval,2,3)){
+									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
+									tercetos.add(t);
+								}
 							}
 ;
 
@@ -97,21 +112,36 @@ declarativa	: procedure
 
 
 procedure	: proc procdef '{' cuerpo '}' {imprimirTercetos();
-										reducirAmbito();}
+										reducirAmbito();
+										if (!pilaDec.isEmpty()){
+											Terceto t  =  new Terceto(pilaDec.remove(pilaDec.size()-1).toString(), null, "FDEC", null);
+											tercetos.add(t);
+										}
+										if (!pilaInv.isEmpty()){
+											Terceto t = new Terceto(pilaInv.remove(pilaInv.size()-1).toString(), null, "RET", null);
+											tercetos.add(t);
+										}}
 ;	
 
 
 proc : PROC ID {imprimirTercetos();
+				nAnidamientos();
 				incrementarAmbito($2.sval);
 				this.ultProc = new StringBuffer($2.sval);
-				addAtributoPDec(this.ultProc.toString(),"Uso", "nombre de procedimiento");}
+				addAtributoPDec(this.ultProc.toString(),"Uso", "nombre de procedimiento");
+				Terceto t = new Terceto($2.sval, null, "ET", null);
+				if (!this.ambito.toString().equals(".p."+$2.sval)){
+					this.pilaDec.add(lastApilado);
+					t.setOp2(""+lastApilado);
+					lastApilado++;
+				}
+				tercetos.add(t);
+				}
 ;
 
-procdef : 	  '(' lp ')'
-			| '(' lp ')' NA '=' factor ',' SHADOWING '=' boolean {addAtributoP( this.ultProc.toString(),"NA", $6.sval);
+procdef : 	  '(' lp ')' NA '=' CTE_INT ',' SHADOWING '=' boolean {addAtributoP( this.ultProc.toString(),"NA", $6.sval);
 																addAtributoP( this.ultProc.toString(),"SHADOWING", $10.sval);}
-			| '(' ')'
-			| '(' ')' NA '=' factor ',' SHADOWING '=' boolean {addAtributoP(this.ultProc.toString(),"NA", $5.sval);
+			| '(' ')' NA '=' CTE_INT ',' SHADOWING '=' boolean {addAtributoP(this.ultProc.toString(),"NA", $5.sval);
 																addAtributoP(this.ultProc.toString(),"SHADOWING", $9.sval);}
 ;
 
@@ -144,11 +174,11 @@ condiWhile    : while '(' condicion ')'     {Terceto t = new Terceto($3.sval,"[?
                         colaTercetos.add(t);}
 ;
 
-invocacion 	: identificadorFuncion parametrosinvo ')' ';' {Terceto t = new Terceto($1.sval, null, "P",null);
-															tercetos.add(t);}
-			| identificadorFuncion ')' ';' {validarTipo(null,0,0);
-											Terceto t = new Terceto($1.sval, null, "P",null);
-											tercetos.add(t);} 
+invocacion 	: identificadorFuncion parametrosinvo ')' ';' 
+			| identificadorFuncion ')' ';' {if(validarTipo(null,0,0)){
+												Terceto t = new Terceto($1.sval, null, "P",null);
+												tercetos.add(t);}
+											} 
 ;
 
 
@@ -367,6 +397,9 @@ boolean 	: TRUE
 	private String [][] matMult = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
 	private String [][] matDiv = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
 	private String [][] matAsig = {{"INTEGER","X"},{"FLOAT","FLOAT"}};
+	private List<Integer> pilaInv = new ArrayList<Integer>();
+	private List<Integer> pilaDec = new ArrayList<Integer>();
+	private int lastApilado = 0;
 	
 	
 	
@@ -578,6 +611,32 @@ boolean 	: TRUE
 		return true;
 	}
 	
+	
+	
+	private boolean nAnidamientos() {
+		int aux = 1;
+		String proc = this.ambito.toString();
+		proc = proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf("."));
+		while (!proc.equals("p")) {
+			if (tSimbolos.containsKey(proc)) {
+				Hashtable<String, Atributo> hs = tSimbolos.get(proc);
+				if (hs.containsKey("NA")) {
+					String na = (String)hs.get("NA").getValue();
+					if (Integer.parseInt(na) < aux){
+						yyerror("Numero de anidamiento de un procedimiento superado");
+						return false;
+					}else {
+						proc = proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf("."));
+						aux++;
+					}
+				}else
+					return false;
+			}else
+				return false;
+		}
+		return true;
+	}
+	
 	/*public boolean shadowing(String proc) {
 		//Verifica si en los ambitos anidados o el mismo hay una definicion de SHADOWING = FALSE indicando que no se pueden redeclarar 
 		//variables en distintos ambitos
@@ -613,6 +672,10 @@ boolean 	: TRUE
 		Atributo att = new Atributo(nAtt, valor);
 		int ultP = this.ambito.lastIndexOf(".");
 		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString().substring(0, ultP));
+		if (nAtt.equals("NA")) {
+			if (Integer.parseInt(valor) > 4 || Integer.parseInt(valor) < 1)
+				yyerror("Numero de anidamiento para un procedimiento incorrecto, debe ser entre 1 y 4");
+		}
 		if(!hs.containsKey(nAtt) && !hs.containsKey("Tipo")) {
 			hs.put(att.getNombre(), att);
 		}
@@ -670,8 +733,15 @@ boolean 	: TRUE
 						tipoParamReal = (String) this.tSimbolos.get(id + this.ambito).get("Tipo").getValue();
 					}
 					if (tipoParamFormal.equals(tipoParamReal)) {
-						Terceto t = new Terceto((String)this.tSimbolos.get(proc).get("param" + indice+"ID").getValue(),id,":=",tipoParamFormal);
+						Terceto t = new Terceto((String)this.tSimbolos.get(proc).get("param" + indice+"ID").getValue(),id,":=",null);
+						if (tipoParamFormal.equals("INTEGER"))
+							t.setTipo("INTEGER");
+						else
+							t.setTipo("FLOAT");
 						tercetos.add(t);
+						//Se le suma 2 porque en este momento se está parado en el terceto de la última asociación de parámetros
+						//después está el terceto del llamado, y ahora si está el terceto al cual hay que volver.
+						pilaInv.add(t.getId()+2);
 						return true;
 					}
 					yyerror("Tipo del identificador pasado por parametro real no se corresponde con el parametro formal. Se espera "

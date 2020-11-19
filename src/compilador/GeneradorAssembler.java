@@ -1,15 +1,17 @@
 package compilador;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
 public class GeneradorAssembler {
 
-	String salida;
-	Hashtable<String, Integer> registros = null;
-	String regLibre= "";
-	List<Terceto> tercetos = null;
-	int numAux = 0;
+	private String salida;
+	private Hashtable<String, Integer> registros = null;
+	//private String regLibre= "";
+	private List<Terceto> tercetos = null;
+	private int numAux = 0;
+	private int nLabel = 0;
 	public GeneradorAssembler() {
 		registros =  new Hashtable<String, Integer>();
 		salida = "";
@@ -135,23 +137,175 @@ public class GeneradorAssembler {
 	
 	}
 	
+	public void toAssFloatByOp(Terceto t) {
+		String opera1 = "_" + t.getOp1();
+		String opera2 = "_" + t.getOp2();
+		int i = 0;
+		if (t.getOp1().charAt(0) == '[') {
+			i = Integer.parseInt(t.getOp1().substring(1, t.getOp1().length()-1));
+			opera1 = tercetos.get(i).getReg();
+		}
+		if (t.getOp2().charAt(0) == '[') {
+			i = Integer.parseInt(t.getOp2().substring(1, t.getOp2().length()-1));
+			opera2 = tercetos.get(i).getReg();
+		}
+		if (t.getToConv() == 0) {
+			switch (t.getOperador()) {
+			case "+":
+				salida += "FLD " + opera2 + "\n";
+				salida += "FADD " + opera1 + "\n";
+				break;
+			case "-":
+				salida += "FLD " + opera2 + "\n";
+				salida += "FSUB " + opera1 + "\n";
+				break;
+			case "*":
+				salida += "FLD " + opera2 + "\n";
+				salida += "FMUL " + opera1 + "\n";
+				break;
+			case "/":
+				salida += "FLD " + opera2 + "\n";
+				salida += "FDIV " + opera1 + "\n";
+				break;
+			case ":=":
+				salida += "FLD " + opera2 + "\n";
+				salida += "FST " + opera1 + "\n";
+				break;
+			default:
+				break;
+			}
+		} else {
+			if (t.getToConv() == 1) {
+				switch (t.getOperador()) {
+				case "+":
+					salida += "FLD " + opera2 + "\n";
+					salida += "FIADD " + opera1 + "\n";
+					break;
+				case "-":
+					salida += "FLD " + opera2 + "\n";
+					salida += "FISUBR " + opera1 + "\n";
+					break;
+				case "*":
+					salida += "FLD " + opera2 + "\n";
+					salida += "FIMUL " + opera1 + "\n";
+					break;
+				case "/":
+					salida += "FLD " + opera2 + "\n";
+					salida += "FIDIVR " + opera1 + "\n";
+					break;
+				default:
+					break;
+				}
+			} else {
+				switch (t.getOperador()) {
+				case "+":
+					salida += "FLD " + opera1 + "\n";
+					salida += "FIADD " + opera2 + "\n";
+					break;
+				case "-":
+					salida += "FLD " + opera1 + "\n";
+					salida += "FISUB " + opera2 + "\n";
+					break;
+				case "*":
+					salida += "FLD " + opera1 + "\n";
+					salida += "FIMUL " + opera2 + "\n";
+					break;
+				case "/":
+					salida += "FLD " + opera1 + "\n";
+					salida += "FIDIV " + opera2 + "\n";
+					break;
+				case ":=":
+					salida += "FILD " + opera2 + "\n";
+					salida += "FST " + opera1 + "\n";
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
+	
+	
+	public void toAssbyComp(Terceto t) {
+		System.out.println();
+		String opera1 = "_" + t.getOp1();
+		String opera2 = "_" + t.getOp2();
+		int i = 0;
+		if (t.getOp1().charAt(0) == '[') {
+			i = Integer.parseInt(t.getOp1().substring(1, t.getOp1().length()-1));
+			opera1 = tercetos.get(i).getReg();
+		}
+		if (t.getOp2().charAt(0) == '[') {
+			i = Integer.parseInt(t.getOp2().substring(1, t.getOp2().length()-1));
+			opera2 = tercetos.get(i).getReg();
+		}
+		if (t.getToConv() == 0) {
+			switch (t.getTipo()) {
+			case "INTEGER":
+				switch (t.getOperador()) {
+				case ">": case "<": case ">=": case "<=": case "==":
+					String libre =  this.getRegLibreOtros();
+					salida += "MOV " + libre + ", " + opera2 +"\n";
+					salida += "CMP " + opera1  + ", " + libre + "\n";
+					break;
+				default:
+					break;
+				}
+				break;
+			case "FLOAT":
+				switch (t.getOperador()) {
+				case ">":
+					
+					break;
+				case "<":
+					
+					break;
+				case ">=":
+					
+					break;
+				case "<=":
+					
+					break;
+				case "==":
+					
+					break;
+
+				default:
+					break;
+				}
+				break;
+			default:
+				break;
+			}
+			
+		}else {
+			if (t.getToConv() == 1) {
+				
+			}else {
+				
+			}
+		}
+	}
 	
 	public void toAssembler(List<Terceto> terce) {
 		tercetos = terce;
+		List<Integer> labels = new ArrayList<Integer>();
 		for (Terceto t: tercetos) {
+			if (labels.contains(t.getId()))
+				salida += "Label" + t.getId() + ":\n";
 			switch (t.getOperador()) {
 			case "+":
 				if (t.getTipo().equals("INTEGER")) {
 					toAssByOpSR(t,"ADD");
 				}else {
-					
+					toAssFloatByOp(t);
 				}
 				break;
 			case "-":
 				if (t.getTipo().equals("INTEGER")) {
 					toAssByOpSR(t,"SUB");
 				}else {
-					
+					toAssFloatByOp(t);
 				}
 				break;
 			case "*":
@@ -159,20 +313,20 @@ public class GeneradorAssembler {
 				if (t.getTipo().equals("INTEGER")) {
 					toAssByOpMD(t,"MUL");
 				}else {
-					
+					toAssFloatByOp(t);
 				}
 				break;
 			case "/":
 				if (t.getTipo().equals("INTEGER")) {
 					toAssByOpMD(t,"DIV");
 				}else {
-					
+					toAssFloatByOp(t);
 				}
 				break;
 			case ":=":
 				if (t.getTipo().equals("INTEGER")) {
 					if (t.getOp2().charAt(0) == '[') {
-						int i = Integer.parseInt(t.getOp2().substring(t.getOp2().indexOf("[")+1,t.getOp2().indexOf("]")));
+						int i = Integer.parseInt(t.getOp2().substring(1,t.getOp2().length()-1));
 						if(Character.isDigit(t.getOp1().charAt(0)))
 							salida += "MOV " + t.getOp1() + ", " + tercetos.get(i).getReg() + "\n";
 						else
@@ -192,27 +346,73 @@ public class GeneradorAssembler {
 							registros.replace(libre, t.getId());
 						}else {
 							liberar("BX");
+							libre = "BX";
 							if(Character.isDigit(t.getOp2().charAt(0)))
-								salida += "MOV BX, " + t.getOp2() + "\n";
+								salida += "MOV " + libre + ", " + t.getOp2() + "\n";
 							else
-								salida += "MOV BX, _" + t.getOp2() + "\n";
+								salida += "MOV " + libre + ", _" + t.getOp2() + "\n";
 							
 							if(Character.isDigit(t.getOp1().charAt(0)))
-								salida += "MOV " + t.getOp1() + ", BX\n";
+								salida += "MOV " + t.getOp1() + ", " + libre + "\n";
 							else
-								salida += "MOV BX, _" + t.getOp1() + "\n";
-							registros.replace("BX", t.getId());
+								salida += "MOV _" + t.getOp1() + ", " + libre + "\n";
+							registros.replace(libre, t.getId());
 						}
 					}
 				}else {
-					
+					toAssFloatByOp(t);
 				}
 				break;
 			case "O":
-				
 				break;
-			case "C":
-				
+			case "P":
+				salida += "JMP " + t.getOp1() + "\n";
+				salida += "Label" + (t.getId()+1) + ":\n";
+				break;
+			case "BF":
+				String compa = "";
+				int i = Integer.parseInt(t.getOp1().substring(1,t.getOp1().length()-1));
+				switch (tercetos.get(i).getOperador()) {
+				case "<":
+					compa = "JL";
+					break;
+				case ">":
+					compa = "JG";
+					break;
+				case "<=":
+					compa = "JLE";
+					break;
+				case ">=":
+					compa = "JGE";
+					break;
+				case "==":
+					compa = "JE";
+					break;
+				default:
+					break;
+				}
+				salida+= compa +" Label" + t.getOp2().substring(1,t.getOp2().length()-1) + "\n";
+				labels.add(Integer.parseInt(t.getOp2().substring(1,t.getOp2().length()-1)));
+				break;
+			case "BI":
+				salida += "JMP Label" + t.getOp1().substring(1,t.getOp1().length()-1) + "\n";
+				salida += "Label"+labels.remove(labels.size()-1)+":\n";
+				labels.add(Integer.parseInt(t.getOp1().substring(1,t.getOp1().length()-1)));
+				break;
+			case "RET":
+				salida += "JMP Label" + t.getOp1() + "\n";
+				break;
+			case "ET":
+				if (t.getOp2()!= null)
+					salida += "JMP FDEC" + t.getOp2() + "\n" +  t.getOp1() + ":\n";
+				else
+					salida +=  t.getOp1() + ":\n";
+				break;
+			case "FDEC":
+				salida += "FDEC"+ t.getOp1() + ":\n";
+				break;
+			case ">":case "<":case ">=":case "<=":case "==":
+				toAssbyComp(t);
 				break;
 			default:
 				break;
