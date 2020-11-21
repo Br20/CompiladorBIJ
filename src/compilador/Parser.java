@@ -386,9 +386,9 @@ final static String yyrule[] = {
 "ejecutable : control",
 "ejecutable : error ';'",
 "declaracion : tipo parametros ';'",
-"control : condiWhile LOOP '{' cuerpowhile '}' ';'",
+"control : condiwhile LOOP '{' cuerpowhile '}' ';'",
 "while : WHILE",
-"condiWhile : while '(' condicion ')'",
+"condiwhile : while '(' condicion ')'",
 "invocacion : identificadorFuncion parametrosinvo ')' ';'",
 "invocacion : identificadorFuncion ')' ';'",
 "identificadorFuncion : ID '('",
@@ -426,7 +426,7 @@ final static String yyrule[] = {
 "boolean : FALSE",
 };
 
-//#line 378 "gramatica.y"
+//#line 387 "gramatica.y"
 	private Lexico lexer;
 	private int erroresS = 0;
 	public static int nLinea = 1;
@@ -437,7 +437,7 @@ final static String yyrule[] = {
 	private static PrintWriter pwTa = null;
 	private FileWriter txtTercetos = null;
 	private static PrintWriter pwTe = null;
-	private StringBuffer ambito = new StringBuffer(".p");
+	private StringBuffer ambito = new StringBuffer("@p");
 	private StringBuffer lastTipo = new StringBuffer();
 	private StringBuffer ultProc = new StringBuffer();
 	private List<Terceto> tercetos = new ArrayList<Terceto>();
@@ -449,7 +449,8 @@ final static String yyrule[] = {
 	private String [][] matMult = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
 	private String [][] matDiv = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
 	private String [][] matAsig = {{"INTEGER","X"},{"FLOAT","FLOAT"}};
-	private List<Integer> pilaInv = new ArrayList<Integer>();
+	private String [][] matComp = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
+	//private List<Integer> pilaInv = new ArrayList<Integer>();
 	private List<Integer> pilaDec = new ArrayList<Integer>();
 	private int lastApilado = 0;
 	
@@ -502,7 +503,7 @@ final static String yyrule[] = {
 	
 	public void imprimirTercetos() {
 		if (tercetos.size()> ultTercetoImp) {
-			pwTe.println("\nTERCETOS DE " +this.ambito.substring(this.ambito.lastIndexOf(".")+1,this.ambito.length()).toUpperCase() + this.ambito.substring(0,this.ambito.lastIndexOf(".")).toUpperCase() + "\n");
+			pwTe.println("\nTERCETOS DE " +this.ambito.substring(this.ambito.lastIndexOf("@")+1,this.ambito.length()).toUpperCase() + this.ambito.substring(0,this.ambito.lastIndexOf("@")).toUpperCase() + "\n");
 		}
 		for (int i= ultTercetoImp; i<tercetos.size();i++) {
 			pwTe.println(tercetos.get(i).toString());
@@ -531,16 +532,20 @@ final static String yyrule[] = {
 		});
 	}
 
+	public Hashtable<String, Hashtable<String, Atributo>> getTS(){
+		return this.tSimbolos;
+	}
+	
 	
 	private void reducirAmbito() {
 		//Metodo invocado cuando el sintactico termina de leer un procedimiento, reduce el ambito sacando el nombre de ese procedimiento
-		int ultP = this.ambito.lastIndexOf(".");
+		int ultP = this.ambito.lastIndexOf("@");
 		this.ambito.delete(ultP, this.ambito.length());
 	}
 	
 	private void incrementarAmbito(String nProc) {
 		//Metodo invocado cuando el sintactico lee la definicion de un procedimiento, agrega el nombre al ambito actual.
-		this.ambito.append("." + nProc);
+		this.ambito.append("@" + nProc);
 	}
 	
 	private boolean setTipo(String id, String tipo) {
@@ -745,8 +750,8 @@ final static String yyrule[] = {
 	private boolean redeclarable(String id) {
 		//Este metodo retorna el valor del "shadowing" si el procedimiento lo tiene definido, o true si no
 		String proc = this.ambito.toString();
-		if(!proc.substring(proc.indexOf("."), proc.length()).equals(".p")) {
-			proc = proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf("."));
+		if(!proc.substring(proc.indexOf("@"), proc.length()).equals("@p")) {
+			proc = proc.substring(proc.lastIndexOf("@")+1, proc.length()) + proc.substring(proc.indexOf("@"), proc.lastIndexOf("@"));
 			if (tSimbolos.get(proc).containsKey("SHADOWING"))
 				if(tSimbolos.get(proc).get("SHADOWING").toString().contains("FALSE")) {
 					return false;
@@ -760,7 +765,7 @@ final static String yyrule[] = {
 	private boolean nAnidamientos() {
 		int aux = 1;
 		String proc = this.ambito.toString();
-		proc = proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf("."));
+		proc = proc.substring(proc.lastIndexOf("@")+1, proc.length()) + proc.substring(proc.indexOf("@"), proc.lastIndexOf("@"));
 		while (!proc.equals("p")) {
 			if (tSimbolos.containsKey(proc)) {
 				Hashtable<String, Atributo> hs = tSimbolos.get(proc);
@@ -770,7 +775,7 @@ final static String yyrule[] = {
 						yyerror("Numero de anidamiento de un procedimiento superado");
 						return false;
 					}else {
-						proc = proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf("."));
+						proc = proc.substring(proc.lastIndexOf("@")+1, proc.length()) + proc.substring(proc.indexOf("@"), proc.lastIndexOf("@"));
 						aux++;
 					}
 				}else
@@ -790,10 +795,10 @@ final static String yyrule[] = {
 					return false;
 				}
 			}			
-			if(proc.substring(proc.indexOf("."), proc.length()).equals(".p")) { //Ya recorrio todos los ambitos anidados por lo q retorna true
+			if(proc.substring(proc.indexOf("@"), proc.length()).equals("@p")) { //Ya recorrio todos los ambitos anidados por lo q retorna true
 				return true;
 			}else
-				return shadowing(proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf(".")));			
+				return shadowing(proc.substring(proc.lastIndexOf("@")+1, proc.length()) + proc.substring(proc.indexOf("@"), proc.lastIndexOf("@")));			
 		}
 		System.out.println("NO DEBERIA LLEGAR ACA");
 		return true;
@@ -801,7 +806,7 @@ final static String yyrule[] = {
 	
 	
 	public void addAtributoPDec(String id, String nAtt, String valor) {
-		int ultP = this.ambito.lastIndexOf(".");
+		int ultP = this.ambito.lastIndexOf("@");
 		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString().substring(0, ultP));
 		if(hs.containsKey("Uso")){
 			yyerror("El nombre de procedimiento ya esta utilizado por una variable u otro procedimiento");
@@ -814,7 +819,7 @@ final static String yyrule[] = {
 	public void addAtributoP(String id, String nAtt, String valor) {
 		//System.out.println(nAtt + " VALOR: " + valor);
 		Atributo att = new Atributo(nAtt, valor);
-		int ultP = this.ambito.lastIndexOf(".");
+		int ultP = this.ambito.lastIndexOf("@");
 		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString().substring(0, ultP));
 		if (nAtt.equals("NA")) {
 			if (Integer.parseInt(valor) > 4 || Integer.parseInt(valor) < 1)
@@ -862,7 +867,7 @@ final static String yyrule[] = {
 	public boolean validarTipo(String id, int indice, int cant){
 		//VALIDA QUE EN LAS INVOCACIONES A PROCEDIMIENTOS ESTEN BIEN LA CANTIDAD DE PARAMETROS Y LOS TIPOS (LO HACE UNO 
 		//A UNO A MEDIDA QUE LOS RECONOCE EN LA GRAMATICA)
-		//int ultP = this.ambito.lastIndexOf(".");
+		//int ultP = this.ambito.lastIndexOf("@");
 		String proc = this.getNombreProc(this.ultProc + this.ambito.toString()); //BUSCA EL PROCEDIMIENTO MAS PROXIMO DEFINIDO EN AMBITOS
 		//System.out.println(this.ultProc + this.ambito.toString());
 		if (proc != null) {
@@ -877,15 +882,15 @@ final static String yyrule[] = {
 						tipoParamReal = (String) this.tSimbolos.get(id + this.ambito).get("Tipo").getValue();
 					}
 					if (tipoParamFormal.equals(tipoParamReal)) {
-						Terceto t = new Terceto((String)this.tSimbolos.get(proc).get("param" + indice+"ID").getValue(),id,":=",null);
+						Terceto t = new Terceto((String)this.tSimbolos.get(proc).get("param" + indice+"ID").getValue(),id+this.ambito,":=",null);
 						if (tipoParamFormal.equals("INTEGER"))
 							t.setTipo("INTEGER");
 						else
 							t.setTipo("FLOAT");
 						tercetos.add(t);
-						//Se le suma 2 porque en este momento se está parado en el terceto de la última asociación de parámetros
-						//después está el terceto del llamado, y ahora si está el terceto al cual hay que volver.
-						pilaInv.add(t.getId()+2);
+						//Se le suma 2 porque en este momento se estÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ parado en el terceto de la ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºltima asociaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de parÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡metros
+						//despuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©s estÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ el terceto del llamado, y ahora si estÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ el terceto al cual hay que volver.
+						//pilaInv.add(t.getId()+2);
 						return true;
 					}
 					yyerror("Tipo del identificador pasado por parametro real no se corresponde con el parametro formal. Se espera "
@@ -911,15 +916,15 @@ final static String yyrule[] = {
 			if (this.tSimbolos.get(s1).containsKey("Tipo"))
 				return s1;
 			else {
-				if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+				if (s1.substring(s1.indexOf("@"), s1.length()).equals("@p"))
 					return null;
-				return this.getNombreVariable(s1.substring(0, s1.lastIndexOf(".")));
+				return this.getNombreVariable(s1.substring(0, s1.lastIndexOf("@")));
 			}
 		}
 		else {
-			if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+			if (s1.substring(s1.indexOf("@"), s1.length()).equals("@p"))
 				return null;
-			return this.getNombreVariable(s1.substring(0, s1.lastIndexOf(".")));
+			return this.getNombreVariable(s1.substring(0, s1.lastIndexOf("@")));
 		}
 	}
 
@@ -930,12 +935,12 @@ final static String yyrule[] = {
 			if (!this.tSimbolos.get(s1).containsKey("Tipo") && this.tSimbolos.get(s1).containsKey("Uso"))
 				return s1;
 			else
-				return this.getNombreProc(s1.substring(0, s1.lastIndexOf(".")));
+				return this.getNombreProc(s1.substring(0, s1.lastIndexOf("@")));
 		}
 		else {
-			if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+			if (s1.substring(s1.indexOf("@"), s1.length()).equals("@p"))
 				return null;
-			return this.getNombreProc(s1.substring(0, s1.lastIndexOf(".")));
+			return this.getNombreProc(s1.substring(0, s1.lastIndexOf("@")));
 		}
 	}
 	
@@ -972,6 +977,10 @@ final static String yyrule[] = {
 						hs.put("Tipo", tipo);
 						hs.put("Uso", uso);
 					}
+					if (token.getValue() == CADENA) {
+						Atributo tipo = new Atributo("Tipo", "CADENA");
+						hs.put("Tipo", tipo);
+					}
 				} else {
 					hs = tSimbolos.get(token.getKey());
 					int cant = (int)hs.get("Referencias").getValue();
@@ -1001,7 +1010,7 @@ final static String yyrule[] = {
 		Lexico.erroresL++;
 		pw.println("Error en la linea " + nLinea + ": " + s);
 	}
-//#line 841 "Parser.java"
+//#line 942 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -1191,24 +1200,26 @@ case 5:
 //#line 47 "gramatica.y"
 { validarDefinicion(val_peek(0).sval);
 					if (validarTipo(val_peek(0).sval,1,3)){
-									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
-									tercetos.add(t);
-								}
+									String procInv = getNombreProc(ultProc.toString()+this.ambito.toString());
+									Terceto t = new Terceto(""+procInv, null, "P",null);
+						tercetos.add(t);
+					}
 					}
 break;
 case 6:
-//#line 53 "gramatica.y"
+//#line 54 "gramatica.y"
 { validarDefinicion(val_peek(2).sval);
 						validarDefinicion(val_peek(0).sval);
 						if (validarTipo(val_peek(2).sval,1,3))
 							if (validarTipo(val_peek(0).sval,2,3)){
-									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
-									tercetos.add(t);
+									String procInv = getNombreProc(ultProc.toString()+this.ambito.toString());
+									Terceto t = new Terceto(""+procInv, null, "P",null);
+								tercetos.add(t);
 								}
 						}
 break;
 case 7:
-//#line 61 "gramatica.y"
+//#line 63 "gramatica.y"
 {
 						validarDefinicion(val_peek(4).sval);
 						validarDefinicion(val_peek(2).sval);
@@ -1216,63 +1227,69 @@ case 7:
 						if (validarTipo(val_peek(4).sval,1,3))
 							if (validarTipo(val_peek(2).sval,2,3))
 								if (validarTipo(val_peek(0).sval,3,3)){
-									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
+									String procInv = getNombreProc(ultProc.toString()+this.ambito.toString());
+									Terceto t = new Terceto(""+procInv, null, "P",null);
 									tercetos.add(t);
 								}
 						}
 break;
 case 8:
-//#line 72 "gramatica.y"
+//#line 75 "gramatica.y"
 {yyerror(val_peek(0).ival,"Parametro faltante luego de la ',' ");
 					 validarDefinicion(val_peek(1).sval);
 					 if (validarTipo(val_peek(1).sval,1,1)){
-						 Terceto t = new Terceto(ultProc.toString(), null, "P",null);
-									tercetos.add(t);
+									String procInv = getNombreProc(ultProc.toString()+this.ambito.toString());
+									Terceto t = new Terceto(""+procInv, null, "P",null);
+						tercetos.add(t);
 					 }
 					 }
 break;
 case 9:
-//#line 79 "gramatica.y"
+//#line 83 "gramatica.y"
 {yyerror(val_peek(0).ival,"Parametro faltante luego de la ',' ");
 							 validarDefinicion(val_peek(3).sval);
 							validarDefinicion(val_peek(1).sval);
 							if (validarTipo(val_peek(3).sval,1,3))
 								if (validarTipo(val_peek(1).sval,2,3)){
-									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
-									tercetos.add(t);
+									String procInv = getNombreProc(ultProc.toString()+this.ambito.toString());
+									Terceto t = new Terceto(""+procInv, null, "P",null);
+									tercetos.add(t);								
 								}
 							}
 break;
 case 10:
-//#line 92 "gramatica.y"
+//#line 97 "gramatica.y"
 {this.lastTipo = new StringBuffer(val_peek(0).sval);}
 break;
 case 11:
-//#line 93 "gramatica.y"
+//#line 98 "gramatica.y"
 {this.lastTipo = new StringBuffer(val_peek(0).sval);}
 break;
 case 20:
-//#line 114 "gramatica.y"
+//#line 119 "gramatica.y"
 {imprimirTercetos();
 										reducirAmbito();
+										if (!this.ambito.toString().equals("@p")){
+											Terceto t = new Terceto(null, null, "RET", null);
+											tercetos.add(t); 
+										}
+
 										if (!pilaDec.isEmpty()){
 											Terceto t  =  new Terceto(pilaDec.remove(pilaDec.size()-1).toString(), null, "FDEC", null);
 											tercetos.add(t);
 										}
-										if (!pilaInv.isEmpty()){
-											Terceto t = new Terceto(pilaInv.remove(pilaInv.size()-1).toString(), null, "RET", null);
-											tercetos.add(t);
-										}}
+
+										}
 break;
 case 21:
-//#line 127 "gramatica.y"
+//#line 135 "gramatica.y"
 {imprimirTercetos();
 				nAnidamientos();
+				Terceto t = new Terceto(val_peek(0).sval+this.ambito.toString(), null, "ET", null);
 				incrementarAmbito(val_peek(0).sval);
 				this.ultProc = new StringBuffer(val_peek(0).sval);
 				addAtributoPDec(this.ultProc.toString(),"Uso", "nombre de procedimiento");
-				Terceto t = new Terceto(val_peek(0).sval, null, "ET", null);
-				if (!this.ambito.toString().equals(".p."+val_peek(0).sval)){
+				if (!this.ambito.toString().equals("@p@"+val_peek(0).sval)){
 					this.pilaDec.add(lastApilado);
 					t.setOp2(""+lastApilado);
 					lastApilado++;
@@ -1281,66 +1298,67 @@ case 21:
 				}
 break;
 case 22:
-//#line 142 "gramatica.y"
+//#line 150 "gramatica.y"
 {addAtributoP( this.ultProc.toString(),"NA", val_peek(4).sval);
 																addAtributoP( this.ultProc.toString(),"SHADOWING", val_peek(0).sval);}
 break;
 case 23:
-//#line 144 "gramatica.y"
+//#line 152 "gramatica.y"
 {addAtributoP(this.ultProc.toString(),"NA", val_peek(4).sval);
 																addAtributoP(this.ultProc.toString(),"SHADOWING", val_peek(0).sval);}
 break;
 case 29:
-//#line 154 "gramatica.y"
+//#line 162 "gramatica.y"
 {yyerror(val_peek(0).ival,"Error sintactico en sentencia ejecutable");}
 break;
 case 31:
-//#line 161 "gramatica.y"
-{Terceto tInc = colaTercetos.get(colaTercetos.size()-1);
+//#line 169 "gramatica.y"
+{Terceto tInc = colaTercetos.remove(colaTercetos.size()-1);
                                 tInc.setOp2("[" + (Terceto.id +1) + "]");
                                 Terceto t = new Terceto("[" + nroTerceto + "]", null, "BI", null);
                                 tercetos.add(t);
                             }
 break;
 case 32:
-//#line 169 "gramatica.y"
+//#line 177 "gramatica.y"
 {nroTerceto = Terceto.id;}
 break;
 case 33:
-//#line 172 "gramatica.y"
+//#line 180 "gramatica.y"
 {Terceto t = new Terceto(val_peek(1).sval,"[?]","BF", null);
                         tercetos.add(t);
                         colaTercetos.add(t);}
 break;
 case 35:
-//#line 178 "gramatica.y"
+//#line 186 "gramatica.y"
 {if(validarTipo(null,0,0)){
-												Terceto t = new Terceto(val_peek(2).sval, null, "P",null);
+												String procInv = getNombreProc(val_peek(2).sval);
+												Terceto t = new Terceto(""+procInv, null, "P",null);
 												tercetos.add(t);}
 											}
 break;
 case 36:
-//#line 185 "gramatica.y"
+//#line 194 "gramatica.y"
 {ultProc = new StringBuffer(val_peek(1).sval); 
 								yyval.sval = val_peek(1).sval;}
 break;
 case 37:
-//#line 189 "gramatica.y"
+//#line 198 "gramatica.y"
 {Terceto t = new Terceto(val_peek(2).sval, null, "O",null);
 										tercetos.add(t);}
 break;
 case 38:
-//#line 193 "gramatica.y"
+//#line 202 "gramatica.y"
 {Terceto tInc = colaTercetos.get(colaTercetos.size()-1);
 																tInc.setOp1("["+(Terceto.id)+"]");}
 break;
 case 39:
-//#line 195 "gramatica.y"
-{Terceto tInc = colaTercetos.get(colaTercetos.size()-1);
+//#line 204 "gramatica.y"
+{Terceto tInc = colaTercetos.remove(colaTercetos.size()-1);
 											tInc.setOp1("["+(Terceto.id)+"]");}
 break;
 case 40:
-//#line 199 "gramatica.y"
+//#line 208 "gramatica.y"
 { Terceto tInc = colaTercetos.get(colaTercetos.size()-1);
 							tInc.setOp2("["+(Terceto.id+1)+"]");
 							Terceto t = new Terceto("[?]",null,"BI",null);
@@ -1350,60 +1368,60 @@ case 40:
 }
 break;
 case 41:
-//#line 208 "gramatica.y"
+//#line 217 "gramatica.y"
 {Terceto t = new Terceto(val_peek(1).sval,"[?]","BF", null);
 								tercetos.add(t);
 								colaTercetos.add(t);}
 break;
 case 42:
-//#line 212 "gramatica.y"
+//#line 221 "gramatica.y"
 {yyval.sval = "["+agregarTerceto(val_peek(2).sval,val_peek(0).sval,val_peek(1).sval).toString()+"]";}
 break;
 case 43:
-//#line 215 "gramatica.y"
+//#line 224 "gramatica.y"
 {yyval.sval = "==";}
 break;
 case 44:
-//#line 216 "gramatica.y"
+//#line 225 "gramatica.y"
 {yyval.sval = "<=";}
 break;
 case 45:
-//#line 217 "gramatica.y"
+//#line 226 "gramatica.y"
 {yyval.sval = ">=";}
 break;
 case 46:
-//#line 218 "gramatica.y"
+//#line 227 "gramatica.y"
 {yyval.sval = "!=";}
 break;
 case 47:
-//#line 219 "gramatica.y"
+//#line 228 "gramatica.y"
 {yyval.sval = "<";}
 break;
 case 48:
-//#line 220 "gramatica.y"
+//#line 229 "gramatica.y"
 {yyval.sval = ">";}
 break;
 case 49:
-//#line 223 "gramatica.y"
+//#line 232 "gramatica.y"
 {if (setTipo(val_peek(0).sval, val_peek(1).sval))
 						addAtributo(val_peek(0).sval,"Uso", "nombre de parametro");
 					addAtributoP(this.ultProc.toString(), "param1", val_peek(1).sval);
-					addAtributoP(this.ultProc.toString(), "param1ID", val_peek(0).sval);}
+					addAtributoP(this.ultProc.toString(), "param1ID", val_peek(0).sval+this.ambito.toString());}
 break;
 case 50:
-//#line 227 "gramatica.y"
+//#line 236 "gramatica.y"
 { if(setTipo(val_peek(3).sval, val_peek(4).sval))
 										addAtributo(val_peek(3).sval,"Uso", "nombre de parametro");
 									if(setTipo(val_peek(0).sval, val_peek(1).sval))
 										addAtributo(val_peek(0).sval,"Uso", "nombre de parametro");
 									addAtributoP(this.ultProc.toString(), "param1", val_peek(4).sval);
 									addAtributoP(this.ultProc.toString(), "param2", val_peek(1).sval);
-									addAtributoP(this.ultProc.toString(), "param1ID", val_peek(3).sval);
-									addAtributoP(this.ultProc.toString(), "param2ID", val_peek(0).sval);
+									addAtributoP(this.ultProc.toString(), "param1ID", val_peek(3).sval+this.ambito.toString());
+									addAtributoP(this.ultProc.toString(), "param2ID", val_peek(0).sval+this.ambito.toString());
 									}
 break;
 case 51:
-//#line 236 "gramatica.y"
+//#line 245 "gramatica.y"
 { 
 									if(setTipo(val_peek(6).sval, val_peek(7).sval))
 										addAtributo(val_peek(6).sval,"Uso", "nombre de parametro");
@@ -1414,22 +1432,22 @@ case 51:
 									addAtributoP(this.ultProc.toString(), "param1", val_peek(7).sval);
 									addAtributoP(this.ultProc.toString(), "param2", val_peek(4).sval);
 									addAtributoP(this.ultProc.toString(), "param3", val_peek(1).sval);
-									addAtributoP(this.ultProc.toString(), "param1ID", val_peek(6).sval);
-									addAtributoP(this.ultProc.toString(), "param2ID", val_peek(3).sval);
-									addAtributoP(this.ultProc.toString(), "param3ID", val_peek(0).sval);
+									addAtributoP(this.ultProc.toString(), "param1ID", val_peek(6).sval+this.ambito.toString());
+									addAtributoP(this.ultProc.toString(), "param2ID", val_peek(3).sval+this.ambito.toString());
+									addAtributoP(this.ultProc.toString(), "param3ID", val_peek(0).sval+this.ambito.toString());
 									}
 break;
 case 52:
-//#line 250 "gramatica.y"
+//#line 259 "gramatica.y"
 {yyerror(val_peek(1).ival,"Parametro faltante luego de la ',' ");
 							if(setTipo(val_peek(1).sval, val_peek(2).sval))
 								addAtributo(val_peek(1).sval,"Uso", "nombre de parametro");
 							addAtributoP(this.ultProc.toString(), "param1", val_peek(2).sval);
-							addAtributoP(this.ultProc.toString(), "param1ID", val_peek(1).sval);
+							addAtributoP(this.ultProc.toString(), "param1ID", val_peek(1).sval+this.ambito.toString());
 							}
 break;
 case 53:
-//#line 256 "gramatica.y"
+//#line 265 "gramatica.y"
 {yyerror(val_peek(2).ival,"Parametro faltante luego de la ',' ");
 									if (setTipo(val_peek(4).sval, val_peek(5).sval))
 										addAtributo(val_peek(4).sval,"Uso", "nombre de parametro");
@@ -1437,17 +1455,17 @@ case 53:
 										addAtributo(val_peek(1).sval,"Uso", "nombre de parametro");
 									addAtributoP(this.ultProc.toString(), "param1", val_peek(5).sval);
 									addAtributoP(this.ultProc.toString(), "param2", val_peek(2).sval);
-									addAtributoP(this.ultProc.toString(), "param1ID", val_peek(4).sval);
-									addAtributoP(this.ultProc.toString(), "param2ID", val_peek(1).sval);
+									addAtributoP(this.ultProc.toString(), "param1ID", val_peek(4).sval+this.ambito.toString());
+									addAtributoP(this.ultProc.toString(), "param2ID", val_peek(1).sval+this.ambito.toString());
 									}
 break;
 case 54:
-//#line 270 "gramatica.y"
+//#line 279 "gramatica.y"
 { if (validarDefinicion(val_peek(3).sval))
 											agregarTerceto(val_peek(3).sval,val_peek(1).sval,":=");}
 break;
 case 55:
-//#line 272 "gramatica.y"
+//#line 281 "gramatica.y"
 {
 								if(redeclarable(val_peek(3).sval)){
 									if (setTipo(val_peek(3).sval, lastTipo.toString())){
@@ -1466,27 +1484,27 @@ case 55:
 								}}
 break;
 case 56:
-//#line 293 "gramatica.y"
+//#line 302 "gramatica.y"
 {yyval.sval = "[" + agregarTerceto(val_peek(2).sval, val_peek(0).sval,"+").toString()+"]";}
 break;
 case 57:
-//#line 294 "gramatica.y"
+//#line 303 "gramatica.y"
 {yyval.sval = "[" + agregarTerceto(val_peek(2).sval, val_peek(0).sval,"-").toString()+"]";}
 break;
 case 59:
-//#line 298 "gramatica.y"
+//#line 307 "gramatica.y"
 {yyval.sval = "[" + agregarTerceto(val_peek(2).sval, val_peek(0).sval,"*").toString()+"]";}
 break;
 case 60:
-//#line 299 "gramatica.y"
+//#line 308 "gramatica.y"
 {yyval.sval = "[" + agregarTerceto(val_peek(2).sval, val_peek(0).sval,"/").toString()+"]";}
 break;
 case 62:
-//#line 303 "gramatica.y"
+//#line 312 "gramatica.y"
 {validarDefinicion(val_peek(0).sval);}
 break;
 case 63:
-//#line 304 "gramatica.y"
+//#line 313 "gramatica.y"
 { 
 				 	Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
 					int cant = 0;
@@ -1512,7 +1530,7 @@ case 63:
  				}}
 break;
 case 64:
-//#line 328 "gramatica.y"
+//#line 337 "gramatica.y"
 {	
 							Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
 							int cant = 0;
@@ -1536,11 +1554,11 @@ case 64:
 									tSimbolos.remove(val_peek(0).sval);}
 break;
 case 65:
-//#line 349 "gramatica.y"
+//#line 358 "gramatica.y"
 {}
 break;
 case 66:
-//#line 350 "gramatica.y"
+//#line 359 "gramatica.y"
 {	
 							Hashtable<String, Atributo> hs = new Hashtable<String, Atributo>();
 							int cant = 0;
@@ -1563,7 +1581,7 @@ case 66:
 							if ((int)tSimbolos.get(val_peek(0).sval).get("Referencias").getValue() == 0)
 									tSimbolos.remove(val_peek(0).sval);}
 break;
-//#line 1398 "Parser.java"
+//#line 1508 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####

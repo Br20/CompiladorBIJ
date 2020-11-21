@@ -46,16 +46,18 @@ parametros 	: parametros ',' ID {if(redeclarable($3.sval)){
 
 parametrosinvo 	: ID { validarDefinicion($1.sval);
 					if (validarTipo($1.sval,1,3)){
-									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
-									tercetos.add(t);
-								}
+									String procInv = getNombreProc(ultProc.toString()+this.ambito.toString());
+									Terceto t = new Terceto(""+procInv, null, "P",null);
+						tercetos.add(t);
+					}
 					}
 			| ID ',' ID { validarDefinicion($1.sval);
 						validarDefinicion($3.sval);
 						if (validarTipo($1.sval,1,3))
 							if (validarTipo($3.sval,2,3)){
-									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
-									tercetos.add(t);
+									String procInv = getNombreProc(ultProc.toString()+this.ambito.toString());
+									Terceto t = new Terceto(""+procInv, null, "P",null);
+								tercetos.add(t);
 								}
 						}
 			| ID ',' ID ',' ID{
@@ -65,15 +67,17 @@ parametrosinvo 	: ID { validarDefinicion($1.sval);
 						if (validarTipo($1.sval,1,3))
 							if (validarTipo($3.sval,2,3))
 								if (validarTipo($5.sval,3,3)){
-									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
+									String procInv = getNombreProc(ultProc.toString()+this.ambito.toString());
+									Terceto t = new Terceto(""+procInv, null, "P",null);
 									tercetos.add(t);
 								}
 						}
 			| ID ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");
 					 validarDefinicion($1.sval);
 					 if (validarTipo($1.sval,1,1)){
-						 Terceto t = new Terceto(ultProc.toString(), null, "P",null);
-									tercetos.add(t);
+									String procInv = getNombreProc(ultProc.toString()+this.ambito.toString());
+									Terceto t = new Terceto(""+procInv, null, "P",null);
+						tercetos.add(t);
 					 }
 					 }
 			| ID ',' ID ',' {yyerror($4.ival,"Parametro faltante luego de la ',' ");
@@ -81,8 +85,9 @@ parametrosinvo 	: ID { validarDefinicion($1.sval);
 							validarDefinicion($3.sval);
 							if (validarTipo($1.sval,1,3))
 								if (validarTipo($3.sval,2,3)){
-									Terceto t = new Terceto(ultProc.toString(), null, "P",null);
-									tercetos.add(t);
+									String procInv = getNombreProc(ultProc.toString()+this.ambito.toString());
+									Terceto t = new Terceto(""+procInv, null, "P",null);
+									tercetos.add(t);								
 								}
 							}
 ;
@@ -113,24 +118,27 @@ declarativa	: procedure
 
 procedure	: proc procdef '{' cuerpo '}' {imprimirTercetos();
 										reducirAmbito();
+										if (!this.ambito.toString().equals("@p")){
+											Terceto t = new Terceto(null, null, "RET", null);
+											tercetos.add(t); 
+										}
+
 										if (!pilaDec.isEmpty()){
 											Terceto t  =  new Terceto(pilaDec.remove(pilaDec.size()-1).toString(), null, "FDEC", null);
 											tercetos.add(t);
 										}
-										if (!pilaInv.isEmpty()){
-											Terceto t = new Terceto(pilaInv.remove(pilaInv.size()-1).toString(), null, "RET", null);
-											tercetos.add(t);
-										}}
+
+										}
 ;	
 
 
 proc : PROC ID {imprimirTercetos();
 				nAnidamientos();
+				Terceto t = new Terceto($2.sval+this.ambito.toString(), null, "ET", null);
 				incrementarAmbito($2.sval);
 				this.ultProc = new StringBuffer($2.sval);
 				addAtributoPDec(this.ultProc.toString(),"Uso", "nombre de procedimiento");
-				Terceto t = new Terceto($2.sval, null, "ET", null);
-				if (!this.ambito.toString().equals(".p."+$2.sval)){
+				if (!this.ambito.toString().equals("@p@"+$2.sval)){
 					this.pilaDec.add(lastApilado);
 					t.setOp2(""+lastApilado);
 					lastApilado++;
@@ -158,7 +166,7 @@ declaracion	: tipo parametros ';'
 ;
 
 
-control     : condiWhile LOOP '{' cuerpowhile '}' ';' {Terceto tInc = colaTercetos.get(colaTercetos.size()-1);
+control     : condiwhile LOOP '{' cuerpowhile '}' ';' {Terceto tInc = colaTercetos.remove(colaTercetos.size()-1);
                                 tInc.setOp2("[" + (Terceto.id +1) + "]");
                                 Terceto t = new Terceto("[" + nroTerceto + "]", null, "BI", null);
                                 tercetos.add(t);
@@ -169,14 +177,15 @@ control     : condiWhile LOOP '{' cuerpowhile '}' ';' {Terceto tInc = colaTercet
 while         : WHILE    {nroTerceto = Terceto.id;}
 ;
 
-condiWhile    : while '(' condicion ')'     {Terceto t = new Terceto($3.sval,"[?]","BF", null);
+condiwhile    : while '(' condicion ')'     {Terceto t = new Terceto($3.sval,"[?]","BF", null);
                         tercetos.add(t);
                         colaTercetos.add(t);}
 ;
 
 invocacion 	: identificadorFuncion parametrosinvo ')' ';' 
 			| identificadorFuncion ')' ';' {if(validarTipo(null,0,0)){
-												Terceto t = new Terceto($1.sval, null, "P",null);
+												String procInv = getNombreProc($1.sval);
+												Terceto t = new Terceto(""+procInv, null, "P",null);
 												tercetos.add(t);}
 											} 
 ;
@@ -192,7 +201,7 @@ salida		: OUT '(' CADENA ')' ';'  {Terceto t = new Terceto($3.sval, null, "O",nu
 
 seleccion 	: ifcondi cuerpoif ELSE '{' cuerpo '}' END_IF ';' {Terceto tInc = colaTercetos.get(colaTercetos.size()-1);
 																tInc.setOp1("["+(Terceto.id)+"]");}
-			| ifcondi cuerpoif END_IF ';' {Terceto tInc = colaTercetos.get(colaTercetos.size()-1);
+			| ifcondi cuerpoif END_IF ';' {Terceto tInc = colaTercetos.remove(colaTercetos.size()-1);
 											tInc.setOp1("["+(Terceto.id)+"]");}
 ;
 
@@ -223,15 +232,15 @@ comparador	: COMP_IGUAL {$$.sval = "==";}
 lp 		: tipo ID {if (setTipo($2.sval, $1.sval))
 						addAtributo($2.sval,"Uso", "nombre de parametro");
 					addAtributoP(this.ultProc.toString(), "param1", $1.sval);
-					addAtributoP(this.ultProc.toString(), "param1ID", $2.sval);}
+					addAtributoP(this.ultProc.toString(), "param1ID", $2.sval+this.ambito.toString());}
 			| tipo ID ',' tipo ID { if(setTipo($2.sval, $1.sval))
 										addAtributo($2.sval,"Uso", "nombre de parametro");
 									if(setTipo($5.sval, $4.sval))
 										addAtributo($5.sval,"Uso", "nombre de parametro");
 									addAtributoP(this.ultProc.toString(), "param1", $1.sval);
 									addAtributoP(this.ultProc.toString(), "param2", $4.sval);
-									addAtributoP(this.ultProc.toString(), "param1ID", $2.sval);
-									addAtributoP(this.ultProc.toString(), "param2ID", $5.sval);
+									addAtributoP(this.ultProc.toString(), "param1ID", $2.sval+this.ambito.toString());
+									addAtributoP(this.ultProc.toString(), "param2ID", $5.sval+this.ambito.toString());
 									}
 			| tipo ID ',' tipo ID ',' tipo ID { 
 									if(setTipo($2.sval, $1.sval))
@@ -243,15 +252,15 @@ lp 		: tipo ID {if (setTipo($2.sval, $1.sval))
 									addAtributoP(this.ultProc.toString(), "param1", $1.sval);
 									addAtributoP(this.ultProc.toString(), "param2", $4.sval);
 									addAtributoP(this.ultProc.toString(), "param3", $7.sval);
-									addAtributoP(this.ultProc.toString(), "param1ID", $2.sval);
-									addAtributoP(this.ultProc.toString(), "param2ID", $5.sval);
-									addAtributoP(this.ultProc.toString(), "param3ID", $8.sval);
+									addAtributoP(this.ultProc.toString(), "param1ID", $2.sval+this.ambito.toString());
+									addAtributoP(this.ultProc.toString(), "param2ID", $5.sval+this.ambito.toString());
+									addAtributoP(this.ultProc.toString(), "param3ID", $8.sval+this.ambito.toString());
 									}
 			| tipo ID ',' {yyerror($2.ival,"Parametro faltante luego de la ',' ");
 							if(setTipo($2.sval, $1.sval))
 								addAtributo($2.sval,"Uso", "nombre de parametro");
 							addAtributoP(this.ultProc.toString(), "param1", $1.sval);
-							addAtributoP(this.ultProc.toString(), "param1ID", $2.sval);
+							addAtributoP(this.ultProc.toString(), "param1ID", $2.sval+this.ambito.toString());
 							}
 			| tipo ID ',' tipo ID ',' {yyerror($4.ival,"Parametro faltante luego de la ',' ");
 									if (setTipo($2.sval, $1.sval))
@@ -260,8 +269,8 @@ lp 		: tipo ID {if (setTipo($2.sval, $1.sval))
 										addAtributo($5.sval,"Uso", "nombre de parametro");
 									addAtributoP(this.ultProc.toString(), "param1", $1.sval);
 									addAtributoP(this.ultProc.toString(), "param2", $4.sval);
-									addAtributoP(this.ultProc.toString(), "param1ID", $2.sval);
-									addAtributoP(this.ultProc.toString(), "param2ID", $5.sval);
+									addAtributoP(this.ultProc.toString(), "param1ID", $2.sval+this.ambito.toString());
+									addAtributoP(this.ultProc.toString(), "param2ID", $5.sval+this.ambito.toString());
 									}	
 ;
 
@@ -385,7 +394,7 @@ boolean 	: TRUE
 	private static PrintWriter pwTa = null;
 	private FileWriter txtTercetos = null;
 	private static PrintWriter pwTe = null;
-	private StringBuffer ambito = new StringBuffer(".p");
+	private StringBuffer ambito = new StringBuffer("@p");
 	private StringBuffer lastTipo = new StringBuffer();
 	private StringBuffer ultProc = new StringBuffer();
 	private List<Terceto> tercetos = new ArrayList<Terceto>();
@@ -397,7 +406,8 @@ boolean 	: TRUE
 	private String [][] matMult = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
 	private String [][] matDiv = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
 	private String [][] matAsig = {{"INTEGER","X"},{"FLOAT","FLOAT"}};
-	private List<Integer> pilaInv = new ArrayList<Integer>();
+	private String [][] matComp = {{"INTEGER","FLOAT"},{"FLOAT","FLOAT"}};
+	//private List<Integer> pilaInv = new ArrayList<Integer>();
 	private List<Integer> pilaDec = new ArrayList<Integer>();
 	private int lastApilado = 0;
 	
@@ -450,7 +460,7 @@ boolean 	: TRUE
 	
 	public void imprimirTercetos() {
 		if (tercetos.size()> ultTercetoImp) {
-			pwTe.println("\nTERCETOS DE " +this.ambito.substring(this.ambito.lastIndexOf(".")+1,this.ambito.length()).toUpperCase() + this.ambito.substring(0,this.ambito.lastIndexOf(".")).toUpperCase() + "\n");
+			pwTe.println("\nTERCETOS DE " +this.ambito.substring(this.ambito.lastIndexOf("@")+1,this.ambito.length()).toUpperCase() + this.ambito.substring(0,this.ambito.lastIndexOf("@")).toUpperCase() + "\n");
 		}
 		for (int i= ultTercetoImp; i<tercetos.size();i++) {
 			pwTe.println(tercetos.get(i).toString());
@@ -479,16 +489,20 @@ boolean 	: TRUE
 		});
 	}
 
+	public Hashtable<String, Hashtable<String, Atributo>> getTS(){
+		return this.tSimbolos;
+	}
+	
 	
 	private void reducirAmbito() {
 		//Metodo invocado cuando el sintactico termina de leer un procedimiento, reduce el ambito sacando el nombre de ese procedimiento
-		int ultP = this.ambito.lastIndexOf(".");
+		int ultP = this.ambito.lastIndexOf("@");
 		this.ambito.delete(ultP, this.ambito.length());
 	}
 	
 	private void incrementarAmbito(String nProc) {
 		//Metodo invocado cuando el sintactico lee la definicion de un procedimiento, agrega el nombre al ambito actual.
-		this.ambito.append("." + nProc);
+		this.ambito.append("@" + nProc);
 	}
 	
 	private boolean setTipo(String id, String tipo) {
@@ -517,6 +531,7 @@ boolean 	: TRUE
 		if (!tSimbolos.containsKey(op2)) {
 			op2 = getNombreVariable(op2+this.ambito);
 		}
+		int convertir = 0;
 		if (op1!=null && op2!=null) {
 			String t1 = tSimbolos.get(op1).get("Tipo").getValue().toString();
 			String t2 = tSimbolos.get(op2).get("Tipo").getValue().toString();
@@ -524,48 +539,138 @@ boolean 	: TRUE
 			case "+":
 				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
 					tipo = matSuma[0][0];
-				if (t1.equals("INTEGER") && t2.equals("FLOAT"))
+				if (t1.equals("INTEGER") && t2.equals("FLOAT")) {
 					tipo = matSuma[0][1];
-				if (t1.equals("FLOAT") && t2.equals("INTEGER"))
+					convertir = 1;
+				}
+				if (t1.equals("FLOAT") && t2.equals("INTEGER")) {
 					tipo = matSuma[1][0];
+					convertir = 2;
+				}
 				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
 					tipo = matSuma[1][1];
 			case "-":
 				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
 					tipo = matResta[0][0];
-				if (t1.equals("INTEGER") && t2.equals("FLOAT"))
+				if (t1.equals("INTEGER") && t2.equals("FLOAT")) {
 					tipo = matResta[0][1];
-				if (t1.equals("FLOAT") && t2.equals("INTEGER"))
+					convertir = 1;
+				}
+				if (t1.equals("FLOAT") && t2.equals("INTEGER")) {
 					tipo = matResta[1][0];
+					convertir = 2;
+				}
 				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
 					tipo = matResta[1][1];
 			case "/":
 				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
 					tipo = matMult[0][0];
-				if (t1.equals("INTEGER") && t2.equals("FLOAT"))
+				if (t1.equals("INTEGER") && t2.equals("FLOAT")) {
 					tipo = matMult[0][1];
-				if (t1.equals("FLOAT") && t2.equals("INTEGER"))
+					convertir = 1;
+				}
+				if (t1.equals("FLOAT") && t2.equals("INTEGER")) {
 					tipo = matMult[1][0];
+					convertir = 2;
+				}
 				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
 					tipo = matMult[1][1];
 			case "*":
 				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
 					tipo = matDiv[0][0];
-				if (t1.equals("INTEGER") && t2.equals("FLOAT"))
+				if (t1.equals("INTEGER") && t2.equals("FLOAT")) {
 					tipo = matDiv[0][1];
-				if (t1.equals("FLOAT") && t2.equals("INTEGER"))
+					convertir = 1;
+				}
+				if (t1.equals("FLOAT") && t2.equals("INTEGER")) {
 					tipo = matDiv[1][0];
+					convertir = 2;
+				}
 				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
 					tipo = matDiv[1][1];
 			case ":=":
 				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
 					tipo = matAsig[0][0];
-				if (t1.equals("INTEGER") && t2.equals("FLOAT"))
+				if (t1.equals("INTEGER") && t2.equals("FLOAT")) {
 					tipo = matAsig[0][1];
-				if (t1.equals("FLOAT") && t2.equals("INTEGER"))
+					convertir = 1;
+				}
+				if (t1.equals("FLOAT") && t2.equals("INTEGER")) {
 					tipo = matAsig[1][0];
+					convertir = 2;
+				}
 				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
 					tipo = matAsig[1][1];
+			case "<":
+				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
+					tipo = matDiv[0][0];
+				if (t1.equals("INTEGER") && t2.equals("FLOAT")) {
+					tipo = matDiv[0][1];
+					convertir = 1;
+				}
+				if (t1.equals("FLOAT") && t2.equals("INTEGER")) {
+					tipo = matDiv[1][0];
+					convertir = 2;
+				}
+				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
+					tipo = matDiv[1][1];
+				break;
+			case ">":
+				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
+					tipo = matDiv[0][0];
+				if (t1.equals("INTEGER") && t2.equals("FLOAT")) {
+					tipo = matDiv[0][1];
+					convertir = 1;
+				}
+				if (t1.equals("FLOAT") && t2.equals("INTEGER")) {
+					tipo = matDiv[1][0];
+					convertir = 2;
+				}
+				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
+					tipo = matDiv[1][1];
+				break;
+			case "==":
+				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
+					tipo = matDiv[0][0];
+				if (t1.equals("INTEGER") && t2.equals("FLOAT")) {
+					tipo = matDiv[0][1];
+					convertir = 1;
+				}
+				if (t1.equals("FLOAT") && t2.equals("INTEGER")) {
+					tipo = matDiv[1][0];
+					convertir = 2;
+				}
+				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
+					tipo = matDiv[1][1];
+				break;
+			case ">=":
+				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
+					tipo = matDiv[0][0];
+				if (t1.equals("INTEGER") && t2.equals("FLOAT")) {
+					tipo = matDiv[0][1];
+					convertir = 1;
+				}
+				if (t1.equals("FLOAT") && t2.equals("INTEGER")) {
+					tipo = matDiv[1][0];
+					convertir = 2;
+				}
+				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
+					tipo = matDiv[1][1];
+				break;
+			case "<=":
+				if (t1.equals("INTEGER") && t2.equals("INTEGER"))
+					tipo = matDiv[0][0];
+				if (t1.equals("INTEGER") && t2.equals("FLOAT")) {
+					tipo = matDiv[0][1];
+					convertir = 1;
+				}
+				if (t1.equals("FLOAT") && t2.equals("INTEGER")) {
+					tipo = matDiv[1][0];
+					convertir = 2;
+				}
+				if (t1.equals("FLOAT") && t2.equals("FLOAT"))
+					tipo = matDiv[1][1];
+				break;
 			default:
 				break;
 			}
@@ -592,6 +697,7 @@ boolean 	: TRUE
 			hs.put(a2.getNombre(),a2);
 			tSimbolos.put("["+t.getId()+"]", hs);
  		}
+		t.setToConv(convertir);
 		tercetos.add(t);
 		
 		return t.getId();
@@ -601,8 +707,8 @@ boolean 	: TRUE
 	private boolean redeclarable(String id) {
 		//Este metodo retorna el valor del "shadowing" si el procedimiento lo tiene definido, o true si no
 		String proc = this.ambito.toString();
-		if(!proc.substring(proc.indexOf("."), proc.length()).equals(".p")) {
-			proc = proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf("."));
+		if(!proc.substring(proc.indexOf("@"), proc.length()).equals("@p")) {
+			proc = proc.substring(proc.lastIndexOf("@")+1, proc.length()) + proc.substring(proc.indexOf("@"), proc.lastIndexOf("@"));
 			if (tSimbolos.get(proc).containsKey("SHADOWING"))
 				if(tSimbolos.get(proc).get("SHADOWING").toString().contains("FALSE")) {
 					return false;
@@ -616,7 +722,7 @@ boolean 	: TRUE
 	private boolean nAnidamientos() {
 		int aux = 1;
 		String proc = this.ambito.toString();
-		proc = proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf("."));
+		proc = proc.substring(proc.lastIndexOf("@")+1, proc.length()) + proc.substring(proc.indexOf("@"), proc.lastIndexOf("@"));
 		while (!proc.equals("p")) {
 			if (tSimbolos.containsKey(proc)) {
 				Hashtable<String, Atributo> hs = tSimbolos.get(proc);
@@ -626,7 +732,7 @@ boolean 	: TRUE
 						yyerror("Numero de anidamiento de un procedimiento superado");
 						return false;
 					}else {
-						proc = proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf("."));
+						proc = proc.substring(proc.lastIndexOf("@")+1, proc.length()) + proc.substring(proc.indexOf("@"), proc.lastIndexOf("@"));
 						aux++;
 					}
 				}else
@@ -646,10 +752,10 @@ boolean 	: TRUE
 					return false;
 				}
 			}			
-			if(proc.substring(proc.indexOf("."), proc.length()).equals(".p")) { //Ya recorrio todos los ambitos anidados por lo q retorna true
+			if(proc.substring(proc.indexOf("@"), proc.length()).equals("@p")) { //Ya recorrio todos los ambitos anidados por lo q retorna true
 				return true;
 			}else
-				return shadowing(proc.substring(proc.lastIndexOf(".")+1, proc.length()) + proc.substring(proc.indexOf("."), proc.lastIndexOf(".")));			
+				return shadowing(proc.substring(proc.lastIndexOf("@")+1, proc.length()) + proc.substring(proc.indexOf("@"), proc.lastIndexOf("@")));			
 		}
 		System.out.println("NO DEBERIA LLEGAR ACA");
 		return true;
@@ -657,7 +763,7 @@ boolean 	: TRUE
 	
 	
 	public void addAtributoPDec(String id, String nAtt, String valor) {
-		int ultP = this.ambito.lastIndexOf(".");
+		int ultP = this.ambito.lastIndexOf("@");
 		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString().substring(0, ultP));
 		if(hs.containsKey("Uso")){
 			yyerror("El nombre de procedimiento ya esta utilizado por una variable u otro procedimiento");
@@ -670,7 +776,7 @@ boolean 	: TRUE
 	public void addAtributoP(String id, String nAtt, String valor) {
 		//System.out.println(nAtt + " VALOR: " + valor);
 		Atributo att = new Atributo(nAtt, valor);
-		int ultP = this.ambito.lastIndexOf(".");
+		int ultP = this.ambito.lastIndexOf("@");
 		Hashtable<String, Atributo> hs = this.tSimbolos.get(id + this.ambito.toString().substring(0, ultP));
 		if (nAtt.equals("NA")) {
 			if (Integer.parseInt(valor) > 4 || Integer.parseInt(valor) < 1)
@@ -718,7 +824,7 @@ boolean 	: TRUE
 	public boolean validarTipo(String id, int indice, int cant){
 		//VALIDA QUE EN LAS INVOCACIONES A PROCEDIMIENTOS ESTEN BIEN LA CANTIDAD DE PARAMETROS Y LOS TIPOS (LO HACE UNO 
 		//A UNO A MEDIDA QUE LOS RECONOCE EN LA GRAMATICA)
-		//int ultP = this.ambito.lastIndexOf(".");
+		//int ultP = this.ambito.lastIndexOf("@");
 		String proc = this.getNombreProc(this.ultProc + this.ambito.toString()); //BUSCA EL PROCEDIMIENTO MAS PROXIMO DEFINIDO EN AMBITOS
 		//System.out.println(this.ultProc + this.ambito.toString());
 		if (proc != null) {
@@ -733,15 +839,15 @@ boolean 	: TRUE
 						tipoParamReal = (String) this.tSimbolos.get(id + this.ambito).get("Tipo").getValue();
 					}
 					if (tipoParamFormal.equals(tipoParamReal)) {
-						Terceto t = new Terceto((String)this.tSimbolos.get(proc).get("param" + indice+"ID").getValue(),id,":=",null);
+						Terceto t = new Terceto((String)this.tSimbolos.get(proc).get("param" + indice+"ID").getValue(),id+this.ambito,":=",null);
 						if (tipoParamFormal.equals("INTEGER"))
 							t.setTipo("INTEGER");
 						else
 							t.setTipo("FLOAT");
 						tercetos.add(t);
-						//Se le suma 2 porque en este momento se está parado en el terceto de la última asociación de parámetros
-						//después está el terceto del llamado, y ahora si está el terceto al cual hay que volver.
-						pilaInv.add(t.getId()+2);
+						//Se le suma 2 porque en este momento se estÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ parado en el terceto de la ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºltima asociaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de parÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡metros
+						//despuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©s estÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ el terceto del llamado, y ahora si estÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ el terceto al cual hay que volver.
+						//pilaInv.add(t.getId()+2);
 						return true;
 					}
 					yyerror("Tipo del identificador pasado por parametro real no se corresponde con el parametro formal. Se espera "
@@ -767,15 +873,15 @@ boolean 	: TRUE
 			if (this.tSimbolos.get(s1).containsKey("Tipo"))
 				return s1;
 			else {
-				if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+				if (s1.substring(s1.indexOf("@"), s1.length()).equals("@p"))
 					return null;
-				return this.getNombreVariable(s1.substring(0, s1.lastIndexOf(".")));
+				return this.getNombreVariable(s1.substring(0, s1.lastIndexOf("@")));
 			}
 		}
 		else {
-			if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+			if (s1.substring(s1.indexOf("@"), s1.length()).equals("@p"))
 				return null;
-			return this.getNombreVariable(s1.substring(0, s1.lastIndexOf(".")));
+			return this.getNombreVariable(s1.substring(0, s1.lastIndexOf("@")));
 		}
 	}
 
@@ -786,12 +892,12 @@ boolean 	: TRUE
 			if (!this.tSimbolos.get(s1).containsKey("Tipo") && this.tSimbolos.get(s1).containsKey("Uso"))
 				return s1;
 			else
-				return this.getNombreProc(s1.substring(0, s1.lastIndexOf(".")));
+				return this.getNombreProc(s1.substring(0, s1.lastIndexOf("@")));
 		}
 		else {
-			if (s1.substring(s1.indexOf("."), s1.length()).equals(".p"))
+			if (s1.substring(s1.indexOf("@"), s1.length()).equals("@p"))
 				return null;
-			return this.getNombreProc(s1.substring(0, s1.lastIndexOf(".")));
+			return this.getNombreProc(s1.substring(0, s1.lastIndexOf("@")));
 		}
 	}
 	
@@ -827,6 +933,10 @@ boolean 	: TRUE
 						Atributo uso = new Atributo("Uso", "constante");
 						hs.put("Tipo", tipo);
 						hs.put("Uso", uso);
+					}
+					if (token.getValue() == CADENA) {
+						Atributo tipo = new Atributo("Tipo", "CADENA");
+						hs.put("Tipo", tipo);
 					}
 				} else {
 					hs = tSimbolos.get(token.getKey());
